@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-include __DIR__ . '/includes/header.php';
-include __DIR__ . '/includes/config.php';
+include("../../includes/header.php");
+include("../../includes/config.php");
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -105,4 +105,4 @@ if (isset($_POST['save'])) {
     </form>
 </div>
 
-<?php include __DIR__ . '/includes/footer.php'; ?>
+<?php include("../../includes/footer.php"); ?>

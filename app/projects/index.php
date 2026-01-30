@@ -1,6 +1,7 @@
 <?php
-include __DIR__ . '/includes/header.php';
-include __DIR__ . '/includes/config.php';
+session_start();
+include("../../includes/header.php");
+include("../../includes/config.php");
 
 $sql = "
     SELECT project_id, title, description, date, location, status, created_by
@@ -70,4 +71,4 @@ $result = mysqli_query($conn, $sql);
     </table>
 </div>
 
-<?php include __DIR__ . '/includes/footer.php'; ?>
+<?php include("../../includes/footer.php"); ?>
