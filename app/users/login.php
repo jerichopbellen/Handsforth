@@ -24,7 +24,7 @@ if (isset($_POST['submit'])) {
     mysqli_begin_transaction($conn);
 
     try {
-        $sql = "SELECT user_id, email, role
+        $sql = "SELECT user_id, email, role, username
                 FROM users 
                 WHERE email=? AND password_hash=? 
                 LIMIT 1";
@@ -37,7 +37,7 @@ if (isset($_POST['submit'])) {
         mysqli_stmt_bind_param($stmt, 'ss', $email, $pass);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_store_result($stmt);
-        mysqli_stmt_bind_result($stmt, $user_id, $email, $role);
+        mysqli_stmt_bind_result($stmt, $user_id, $email, $role, $username);
 
         if (mysqli_stmt_num_rows($stmt) === 1) {
             mysqli_stmt_fetch($stmt);
@@ -45,7 +45,7 @@ if (isset($_POST['submit'])) {
             $_SESSION['email']   = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
             $_SESSION['user_id'] = (int)$user_id;
             $_SESSION['role']    = $role;
-            
+            $_SESSION['username'] = $username;
             mysqli_stmt_close($stmt);
             mysqli_commit($conn);
 
