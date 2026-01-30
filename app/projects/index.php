@@ -12,6 +12,7 @@ $result = mysqli_query($conn, $sql);
 ?>
 
 <div class="container mt-4">
+    <?php include("../../includes/alert.php"); ?>
     <h2>Project List</h2>
 
     <a href="create.php" class="btn btn-success mb-3">+ Add Project</a>
