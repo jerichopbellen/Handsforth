@@ -71,7 +71,7 @@ if (isset($_POST['submit'])) {
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-sm">
-                <div class="card-header bg-warning text-dark">
+                <div class="card-header bg-dark text-white">
                     <h4 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Edit Attendance</h4>
                 </div>
                 <div class="card-body">
@@ -101,7 +101,7 @@ if (isset($_POST['submit'])) {
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="submit" name="submit" class="btn btn-warning"><i class="bi bi-check-circle me-1"></i>Update</button>
+                            <button type="submit" name="submit" class="btn btn-success"><i class="bi bi-check-circle me-1"></i>Update</button>
                             <a href="index.php" class="btn btn-secondary"><i class="bi bi-arrow-left me-1"></i>Cancel</a>
                         </div>
                     </form>
