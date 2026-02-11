@@ -34,10 +34,10 @@ if (!$assignment) {
     exit();
 }
 
-// Fetch volunteers
+
 $volunteers = mysqli_query($conn, "SELECT user_id, CONCAT(first_name, ' ', last_name) AS name FROM users WHERE role = 'volunteer' ORDER BY first_name ASC");
 
-// Fetch projects
+
 $projects = mysqli_query($conn, "SELECT project_id, title FROM projects ORDER BY title ASC");
 
 // Handle form submission
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="container my-5">
     <div class="card shadow-sm">
-        <div class="card-header bg-warning text-dark">
+        <div class="card-header bg-dark text-white">
             <h4><i class="bi bi-pencil-square me-2"></i>Edit Volunteer Assignment</h4>
         </div>
         <div class="card-body">
