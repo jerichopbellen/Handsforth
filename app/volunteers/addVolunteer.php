@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="container my-5">
     <div class="card shadow-sm">
-        <div class="card-header bg-success text-white">
+        <div class="card-header bg-dark text-white">
             <h4><i class="bi bi-person-plus-fill me-2"></i>Add Volunteer</h4>
         </div>
         <div class="card-body">
