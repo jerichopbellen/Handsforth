@@ -52,9 +52,9 @@ if (isset($_POST['submit'])) {
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-dark text-white">
                     <h4 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Add Attendance</h4>
-                </div>
+                </div> 
                 <div class="card-body">
                     <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST">
                         <div class="mb-3">
@@ -76,7 +76,7 @@ if (isset($_POST['submit'])) {
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="submit" name="submit" class="btn btn-primary">
+                            <button type="submit" name="submit" class="btn btn-success">
                                 <i class="bi bi-check-circle me-1"></i>Save
                             </button>
                             <a href="index.php" class="btn btn-secondary">
