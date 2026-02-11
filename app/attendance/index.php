@@ -29,14 +29,13 @@ if (!$result) {
 <div class="container my-5">
     <?php include("../../includes/alert.php"); ?>
 
-    <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h4 class="mb-0"><i class="bi bi-list-check me-2"></i>Attendance Records</h4>
-            <a href="addAttendance.php" class="btn btn-light btn-sm">
-                <i class="bi bi-plus-circle me-1"></i>Add Attendance
-            </a>
-        </div>
-        <div class="card-body">
+    <div class="card shadow-sm"> 
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center"> 
+            <h4 class="mb-0"><i class="bi bi-people me-2"></i>Attendance Records</h4> 
+            <a href="addAttendance.php" class="btn btn-light btn-sm text-dark"> 
+                <i class="bi bi-plus-circle me-1"></i>Add Attendance 
+            </a> 
+        </div> <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-bordered table-hover align-middle">
                     <thead class="table-light">
