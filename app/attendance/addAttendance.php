@@ -100,7 +100,7 @@ if (isset($_POST['submit'])) {
                                 <option value="">-- Select Project --</option>
                                 <?php foreach ($projects as $proj): ?>
                                     <option value="<?php echo $proj['project_id']; ?>">
-                                        <?php echo htmlspecialchars($proj['project_name']); ?>
+                                        <?php echo htmlspecialchars($proj['title']); ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
@@ -112,7 +112,7 @@ if (isset($_POST['submit'])) {
                             <select class="form-select" id="status" name="status" required>
                                 <option value="present">Present</option>
                                 <option value="absent">Absent</option>
-                                <option value="late">Late</option>g
+                                <option value="late">Late</option>
                             </select>
                         </div>
 

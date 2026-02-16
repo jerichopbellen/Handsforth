@@ -9,7 +9,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 }
 
 // Fetch attendance records
-// Fetch attendance records
 $sql = "SELECT a.attendance_id, 
                CONCAT(u.first_name, ' ', u.last_name) AS volunteer_name, 
                p.title AS project_name, 
@@ -23,7 +22,6 @@ $result = mysqli_query($conn, $sql);
 if (!$result) {
     die("Query failed: " . mysqli_error($conn));
 }
-
 ?>
 
 <div class="container my-5">
@@ -35,7 +33,8 @@ if (!$result) {
             <a href="addAttendance.php" class="btn btn-light btn-sm text-dark"> 
                 <i class="bi bi-plus-circle me-1"></i>Add Attendance 
             </a> 
-        </div> <div class="card-body">
+        </div> 
+        <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-bordered table-hover align-middle">
                     <thead class="table-light">
@@ -56,16 +55,24 @@ if (!$result) {
                                     <td><?php echo $row['attendance_id']; ?></td>
                                     <td><?php echo htmlspecialchars($row['volunteer_name']); ?></td>
                                     <td><?php echo htmlspecialchars($row['project_name']); ?></td>
-                                    <td><?php echo $row['check_in_time']; ?></td>
-                                    <td><?php echo $row['check_out_time'] ?? '-'; ?></td>
+                                    <td><?php echo date('h:i A', strtotime($row['check_in_time'])); ?></td>
+                                    <td><?php echo $row['check_out_time'] ? date('h:i A', strtotime($row['check_out_time'])) : '-'; ?></td>
                                     <td>
-                                        <span class="badge <?php echo ($row['status'] === 'present') ? 'bg-success' : 'bg-danger'; ?>">
+                                        <?php 
+                                            $badgeClass = 'bg-secondary';
+                                            if ($row['status'] === 'present') $badgeClass = 'bg-success';
+                                            elseif ($row['status'] === 'absent') $badgeClass = 'bg-danger';
+                                            elseif ($row['status'] === 'late') $badgeClass = 'bg-warning text-dark';
+                                        ?>
+                                        <span class="badge <?php echo $badgeClass; ?>">
                                             <?php echo ucfirst($row['status']); ?>
                                         </span>
                                     </td>
                                     <td>
                                         <a href="editAttendance.php?id=<?php echo $row['attendance_id']; ?>" 
-                                           class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Edit</a>
+                                           class="btn btn-sm btn-warning">
+                                           <i class="bi bi-pencil-square"></i> Edit
+                                        </a>
                                         <a href="deleteAttendance.php?id=<?php echo $row['attendance_id']; ?>" 
                                            class="btn btn-sm btn-danger" 
                                            onclick="return confirm('Are you sure you want to delete this record?');">
