@@ -119,13 +119,13 @@ if (isset($_POST['submit'])) {
                         <!-- Check-in -->
                         <div class="mb-3">
                             <label for="check_in_time" class="form-label">Check-in Time <span class="text-danger">*</span></label>
-                            <input type="datetime-local" class="form-control" id="check_in_time" name="check_in_time" required>
+                            <input type="time" class="form-control" id="check_in_time" name="check_in_time" required>
                         </div>
 
                         <!-- Check-out -->
                         <div class="mb-3">
                             <label for="check_out_time" class="form-label">Check-out Time</label>
-                            <input type="datetime-local" class="form-control" id="check_out_time" name="check_out_time">
+                            <input type="time" class="form-control" id="check_out_time" name="check_out_time">
                         </div>
 
                         <div class="d-flex gap-2">
