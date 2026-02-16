@@ -60,7 +60,6 @@ $user = mysqli_fetch_assoc($result);
                             <select name="role" id="role" class="form-select" required>
                                 <option value="admin" <?= $user['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
                                 <option value="volunteer" <?= $user['role'] === 'volunteer' ? 'selected' : ''; ?>>Volunteer</option>
-                                <option value="user" <?= $user['role'] === 'user' ? 'selected' : ''; ?>>User</option>
                             </select>
                         </div>
 
