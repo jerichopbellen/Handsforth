@@ -51,6 +51,8 @@ if (isset($_POST['save'])) {
 
     <form method="POST">
 
+
+        <label for="title">Title</label>
         <input type="text"
                name="title"
                class="form-control mb-2"
@@ -58,17 +60,21 @@ if (isset($_POST['save'])) {
                required
                value="<?= isset($_POST['title']) ? htmlspecialchars($_POST['title']) : '' ?>">
 
+        <label for="description">Description</label>
         <textarea name="description"
                   class="form-control mb-2"
                   placeholder="Description"
                   required><?= isset($_POST['description']) ? htmlspecialchars($_POST['description']) : '' ?></textarea>
-
+        
+        <label for="date">Date</label>
         <input type="date"
                name="date"
                class="form-control mb-2"
                required
                value="<?= isset($_POST['date']) ? htmlspecialchars($_POST['date']) : '' ?>">
 
+        
+        <label for="location">Location</label>
         <input type="text"
                name="location"
                class="form-control mb-2"
@@ -76,6 +82,8 @@ if (isset($_POST['save'])) {
                required
                value="<?= isset($_POST['location']) ? htmlspecialchars($_POST['location']) : '' ?>">
 
+
+        <label for="status">Status</label>
         <select name="status" class="form-control mb-3" required>
             <option value="" disabled <?= $statusSelected == '' ? 'selected' : '' ?>>
                 -- Select Status --
@@ -92,8 +100,9 @@ if (isset($_POST['save'])) {
         </select>
 
         <div class="mb-3">
-            <label class="form-label">Created By</label>
+            <label for="created_by" class="form-label">Created By</label>
             <input type="text"
+                   name="created_by"
                    class="form-control"
                    value="<?= htmlspecialchars($loggedInAdminName); ?>"
                    readonly>
