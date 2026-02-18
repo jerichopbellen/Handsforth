@@ -34,7 +34,7 @@ $user = mysqli_fetch_assoc($result);
                 <!-- Profile Picture Column -->
                 <div class="col-md-4 text-center border-end">
                     <img id="preview" 
-                         src="<?= !empty($user['img_path']) ? htmlspecialchars($user['img_path']) : '../../assets/default-avatar.png'; ?>" 
+                         src="<?= !empty($user['img_path']) ? '../' . htmlspecialchars($user['img_path']) : '../../assets/default-avatar.png'; ?>" 
                          alt="Profile Picture" 
                          class="img-thumbnail mb-3 rounded-circle" 
                          style="max-width:200px; width: 200px; height: 200px; object-fit: cover;">

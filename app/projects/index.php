@@ -4,8 +4,9 @@ include("../../includes/header.php");
 include("../../includes/config.php");
 
 $sql = "
-    SELECT project_id, title, description, date, location, status, created_by
+    SELECT project_id, title, description, date, location, status, created_by, username
     FROM projects
+    INNER JOIN users ON projects.created_by = users.user_id
     ORDER BY date DESC
 ";
 $result = mysqli_query($conn, $sql);
@@ -47,7 +48,7 @@ $result = mysqli_query($conn, $sql);
                                 <?= htmlspecialchars($row['status']); ?>
                             </span>
                         </td>
-                        <td><?= htmlspecialchars($row['created_by']); ?></td>
+                        <td><?= htmlspecialchars($row['username']); ?></td>
                         <td>
                             <a href="edit.php?id=<?= $row['project_id']; ?>"
                                class="btn btn-sm btn-primary">
