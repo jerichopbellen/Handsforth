@@ -70,7 +70,11 @@ $total_goods = mysqli_fetch_assoc($total_goods_result)['total'] ?? 0;
     
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="bi bi-gift me-2"></i>Donation Management</h2>
-        <a href="addDonation.php" class="btn btn-success"><i class="bi bi-plus-circle me-1"></i>Add Donation</a>
+        <div>
+            <a href="addDonation.php" class="btn btn-success me-2"><i class="bi bi-plus-circle me-1"></i>Add Donation</a>
+            <a href="exportDonationsCSV.php" class="btn btn-outline-primary me-2"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Export CSV</a>
+            <a href="printDonations.php" class="btn btn-outline-secondary" target="_blank"><i class="bi bi-printer me-1"></i>Print Report</a>
+        </div>
     </div>
 
     <div class="row mb-4">
@@ -157,13 +161,16 @@ $total_goods = mysqli_fetch_assoc($total_goods_result)['total'] ?? 0;
                             </td>
                             <td><?php echo htmlspecialchars($donation['date_received']); ?></td>
                             <td>
-                                <a href="editDonation.php?id=<?php echo $donation['donation_id']; ?>" class="btn btn-sm btn-warning">
+                                <a href="viewDonation.php?id=<?php echo $donation['donation_id']; ?>" class="btn btn-sm btn-info" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="editDonation.php?id=<?php echo $donation['donation_id']; ?>" class="btn btn-sm btn-warning" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <a href="deleteDonation.php?id=<?php echo $donation['donation_id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?');">
+                                <a href="deleteDonation.php?id=<?php echo $donation['donation_id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?');" title="Delete">
                                     <i class="bi bi-trash"></i>
                                 </a>
-                                <a href="distributeDonation.php?id=<?php echo $donation['donation_id']; ?>" class="btn btn-sm btn-primary">
+                                <a href="distributeDonation.php?id=<?php echo $donation['donation_id']; ?>" class="btn btn-sm btn-primary" title="Distribute">
                                     <i class="bi bi-arrow-right-circle"></i>
                                 </a>
                             </td>
