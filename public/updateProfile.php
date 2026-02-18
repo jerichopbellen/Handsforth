@@ -26,7 +26,7 @@ if (isset($_POST['submit'])) {
 
     // Handle image upload
     if (isset($_FILES['img_path']) && $_FILES['img_path']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = __DIR__ . "/../../uploads/";
+        $uploadDir = "../uploads/";
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
@@ -40,7 +40,7 @@ if (isset($_POST['submit'])) {
         if (in_array($fileType, $allowedTypes)) {
             if (move_uploaded_file($_FILES['img_path']['tmp_name'], $targetFile)) {
                 // Save relative path for browser access
-                $img_path = "../../uploads/" . $fileName;
+                $img_path = "../uploads/" . $fileName;
             }
         }
     }

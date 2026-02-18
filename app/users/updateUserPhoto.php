@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (in_array($fileType, $allowedTypes)) {
             if (move_uploaded_file($_FILES['img_path']['tmp_name'], $targetFile)) {
-                $img_path = "../../uploads/" . $fileName;
+                $img_path = "../uploads/" . $fileName;
 
                 // Update DB with new path
                 $sql = "UPDATE users SET img_path='$img_path', updated_at=NOW() WHERE user_id=$user_id";
