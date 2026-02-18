@@ -33,9 +33,6 @@ if (!$result) {
         <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
             <h4 class="mb-0"><i class="bi bi-people-fill me-2"></i>Volunteers Assigned to Projects</h4>
             <div>
-                <a href="addVolunteer.php" class="btn btn-light btn-sm me-2">
-                    <i class="bi bi-person-plus-fill me-1"></i>Add Volunteer
-                </a>
                 <a href="assignVolunteer.php" class="btn btn-light btn-sm">
                     <i class="bi bi-plus-circle me-1"></i>Assign Volunteer
                 </a>
