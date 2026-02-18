@@ -16,7 +16,8 @@ if (!$donation_id) {
 }
 
 // Fetch donation details
-$sql = "SELECT * FROM donations WHERE donation_id = ?";
+
+$sql = "SELECT d.*, donors.name, donors.email, donors.phone FROM donations d LEFT JOIN donors ON d.donor_id = donors.donor_id WHERE d.donation_id = ?";
 $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_bind_param($stmt, 'i', $donation_id);
 mysqli_stmt_execute($stmt);
@@ -47,7 +48,13 @@ mysqli_stmt_close($dist_stmt);
     </div>
     <div class="card mb-4">
         <div class="card-body">
-            <h5 class="card-title">Donor Name: <?php echo htmlspecialchars($donation['donor_name'] ?? 'Anonymous'); ?></h5>
+            <?php if ($donation['anonymous']): ?>
+                <h5 class="card-title">Donor: Anonymous</h5>
+            <?php else: ?>
+                <h5 class="card-title">Donor Name: <?php echo htmlspecialchars($donation['name']); ?></h5>
+                <p><strong>Email:</strong> <?php echo htmlspecialchars($donation['email']); ?></p>
+                <p><strong>Phone:</strong> <?php echo htmlspecialchars($donation['phone']); ?></p>
+            <?php endif; ?>
             <p><strong>Type:</strong> <?php echo htmlspecialchars($donation['donation_type']); ?></p>
             <p><strong>Amount:</strong> <?php echo $donation['donation_type'] === 'funds' ? '$' . htmlspecialchars($donation['amount']) : 'N/A'; ?></p>
             <p><strong>Description:</strong> <?php echo htmlspecialchars($donation['description']); ?></p>
