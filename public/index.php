@@ -128,45 +128,43 @@ mysqli_stmt_close($stmt);
 
             <!-- Completed Projects -->
             <div class="card border-0" style="box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);">
-                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #6c757d 0%, #495057 100%);">
+                <div class="card-header bg-gradient text-black" style="background: linear-gradient(135deg, #6c757d 0%, #495057 100%);">
                     <h5 class="mb-0 text-black"><i class="bi bi-check-circle me-2"></i>Completed Projects</h5>
                 </div>
                 <div class="card-body p-4">
                     <?php if (mysqli_num_rows($completed_result) > 0): ?>
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Project</th>
-                                        <th>Date</th>
-                                        <th>Attendance</th>
-                                        <th>Hours</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php while ($row = mysqli_fetch_assoc($completed_result)): ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($row['title']); ?></td>
-                                            <td><?php echo date('M d, Y', strtotime($row['date'])); ?></td>
-                                            <td>
-                                                <?php if ($row['attendance_status']): ?>
-                                                    <span class="badge <?php echo $row['attendance_status'] === 'present' ? 'bg-success' : ($row['attendance_status'] === 'late' ? 'bg-warning text-dark' : 'bg-danger'); ?>">
-                                                        <?php echo ucfirst($row['attendance_status']); ?>
-                                                    </span>
-                                                <?php else: ?>
-                                                    <span class="text-muted small">-</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td><small><?php echo ($row['check_in_time'] && $row['check_out_time']) ? date('H:i', strtotime($row['check_out_time'])) - date('H:i', strtotime($row['check_in_time'])) : '-'; ?></small></td>
-                                        </tr>
-                                    <?php endwhile; ?>
-                                </tbody>
-                            </table>
+                        <div class="row g-3">
+                            <?php while ($row = mysqli_fetch_assoc($completed_result)): ?>
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 h-100" style="background-color: #f8f9fa; transition: all 0.3s;">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="text-dark mb-0"><?php echo htmlspecialchars($row['title']); ?></h6>
+                                            <?php if ($row['attendance_status']): ?>
+                                                <span class="badge <?php echo $row['attendance_status'] === 'present' ? 'bg-success' : ($row['attendance_status'] === 'late' ? 'bg-warning text-dark' : 'bg-danger'); ?>">
+                                                    <?php echo ucfirst($row['attendance_status']); ?>
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <p class="mb-2">
+                                            <i class="bi bi-calendar text-muted me-2"></i>
+                                            <small><?php echo date('M d, Y', strtotime($row['date'])); ?></small>
+                                        </p>
+                                        <p class="mb-2">
+                                            <i class="bi bi-geo-alt text-muted me-2"></i>
+                                            <small><?php echo htmlspecialchars($row['location']); ?></small>
+                                        </p>
+                                        <p class="mb-0">
+                                            <i class="bi bi-hourglass-split text-muted me-2"></i>
+                                            <small><?php echo ($row['attendance_status'] !== 'absent' && $row['check_in_time'] && $row['check_out_time']) ? round((strtotime($row['check_out_time']) - strtotime($row['check_in_time'])) / 3600, 1) . ' hrs' : '-'; ?></small>
+                                        </p>
+                                    </div>
+                                </div>
+                            <?php endwhile; ?>
                         </div>
                     <?php else: ?>
-                        <div class="text-center py-4">
-                            <i class="bi bi-inbox" style="font-size: 2rem; color: #ccc;"></i>
-                            <p class="text-muted mt-2">No completed projects yet</p>
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox" style="font-size: 3rem; color: #ddd;"></i>
+                            <p class="text-muted mt-3">No completed projects yet</p>
                         </div>
                     <?php endif; ?>
                 </div>
