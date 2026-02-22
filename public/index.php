@@ -3,7 +3,7 @@ session_start();
 include("../includes/header.php");
 include("../includes/config.php");
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'volunteer') {
+if (!isset($_SESSION['user_id'])) {
     header("Location: ../app/users/login.php");
     exit;
 }

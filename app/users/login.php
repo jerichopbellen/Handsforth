@@ -51,7 +51,12 @@ if (isset($_POST['submit'])) {
 
             unset($_SESSION['email_input']);
 
-            header("Location: ../../public/index.php");
+            if ($role === 'admin') {
+                header("Location: ../../app/projects/index.php");
+            } else {
+                header("Location: ../../public/index.php");
+            }
+
             exit();
         } else {
             mysqli_stmt_close($stmt);
