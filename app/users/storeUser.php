@@ -11,7 +11,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 // Collect form data
 $role       = mysqli_real_escape_string($conn, $_POST['role']);
 $username   = mysqli_real_escape_string($conn, $_POST['username']);
-$password   = password_hash($_POST['password'], PASSWORD_DEFAULT);
+$password   = sha1(trim($_POST['password']));
 $first_name = mysqli_real_escape_string($conn, $_POST['first_name']);
 $last_name  = mysqli_real_escape_string($conn, $_POST['last_name']);
 $email      = mysqli_real_escape_string($conn, $_POST['email']);
@@ -36,7 +36,7 @@ if (isset($_FILES['img_path']) && $_FILES['img_path']['error'] === UPLOAD_ERR_OK
     if (in_array($fileType, $allowedTypes)) {
         if (move_uploaded_file($_FILES['img_path']['tmp_name'], $targetFile)) {
             // Save relative path for browser access
-            $img_path = "../../uploads/" . $fileName;
+            $img_path = "../uploads/" . $fileName;
         }
     }
 }
