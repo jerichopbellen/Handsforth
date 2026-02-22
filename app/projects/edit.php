@@ -22,8 +22,7 @@ if (isset($_POST['update'])) {
         description='$description',
         date='$date',
         location='$location',
-        status='$status',
-        created_by='$created_by'
+        status='$status'
         WHERE project_id=$id");
 
     header("Location: index.php");
@@ -50,7 +49,7 @@ if (isset($_POST['update'])) {
             <option <?= $project['status']=='Pending'?'selected':'' ?>>Pending</option>
         </select>
         <label for="created_by">Created By</label>
-        <input type="text" name="created_by" class="form-control mb-2" value="<?= $project['username']; ?>" required>
+        <input type="text" name="created_by" class="form-control mb-2" value="<?= $project['username']; ?>" readonly>
 
         <button name="update" class="btn btn-primary">Update</button>
         <a href="index.php" class="btn btn-secondary">Cancel</a>
