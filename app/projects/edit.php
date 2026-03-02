@@ -15,7 +15,6 @@ if (isset($_POST['update'])) {
     $date = $_POST['date'];
     $location = $_POST['location'];
     $status = $_POST['status'];
-    $created_by = $_POST['created_by'];
 
     mysqli_query($conn, "UPDATE projects SET
         title='$title',
@@ -30,30 +29,66 @@ if (isset($_POST['update'])) {
 }
 ?>
 
-<div class="container mt-4">
-    <h2>Edit Project</h2>
+<div class="container mt-5">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Edit Project</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="title" class="form-label fw-bold">Title</label>
+                    <input type="text" name="title" class="form-control form-control-lg" value="<?= htmlspecialchars($project['title']); ?>" required>
+                </div>
 
-    <form method="POST">
-        <label for="title">Title</label>
-        <input type="text" name="title" class="form-control mb-2" value="<?= $project['title']; ?>" required>
-        <label for="description">Description</label>
-        <textarea name="description" class="form-control mb-2" required><?= $project['description']; ?></textarea>
-        <label for="date">Date</label>
-        <input type="date" name="date" class="form-control mb-2" value="<?= $project['date']; ?>" required>
-        <label for="location">Location</label>
-        <input type="text" name="location" class="form-control mb-2" value="<?= $project['location']; ?>" required>
-        <label for="status">Status</label>
-        <select name="status" class="form-control mb-2">
-            <option <?= $project['status']=='Ongoing'?'selected':'' ?>>Ongoing</option>
-            <option <?= $project['status']=='Completed'?'selected':'' ?>>Completed</option>
-            <option <?= $project['status']=='Pending'?'selected':'' ?>>Pending</option>
-        </select>
-        <label for="created_by">Created By</label>
-        <input type="text" name="created_by" class="form-control mb-2" value="<?= $project['username']; ?>" readonly>
+                <div class="mb-3">
+                    <label for="description" class="form-label fw-bold">Description</label>
+                    <textarea name="description" class="form-control form-control-lg" rows="4" required><?= htmlspecialchars($project['description']); ?></textarea>
+                </div>
 
-        <button name="update" class="btn btn-primary">Update</button>
-        <a href="index.php" class="btn btn-secondary">Cancel</a>
-    </form>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="date" class="form-label fw-bold">Date</label>
+                            <input type="date" name="date" class="form-control" value="<?= htmlspecialchars($project['date']); ?>" required>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="location" class="form-label fw-bold">Location</label>
+                            <input type="text" name="location" class="form-control" value="<?= htmlspecialchars($project['location']); ?>" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="status" class="form-label fw-bold">Status</label>
+                            <select name="status" class="form-select" required>
+                                <option value="Ongoing" <?= $project['status']=='Ongoing'?'selected':'' ?>>Ongoing</option>
+                                <option value="Completed" <?= $project['status']=='Completed'?'selected':'' ?>>Completed</option>
+                                <option value="Pending" <?= $project['status']=='Pending'?'selected':'' ?>>Pending</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="created_by" class="form-label fw-bold">Created By</label>
+                            <input type="text" name="created_by" class="form-control" value="<?= htmlspecialchars($project['username']); ?>" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button name="update" class="btn btn-success px-4">Update</button>
+                    <a href="index.php" class="btn btn-outline-secondary px-4">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
-<?php include("../../includes/footer.php"); ?>
+<?php include("../../includes/footer.php"); ?>S
