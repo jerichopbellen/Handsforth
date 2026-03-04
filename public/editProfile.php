@@ -29,9 +29,11 @@ mysqli_stmt_close($stmt);
 
     <div class="row justify-content-center">
         <div class="col-lg-7">
-            <div class="card shadow">
-                <div class="card-header bg-dark text-white py-3">
-                    <h4 class="mb-0"><i class="bi bi-person-circle me-2"></i>My Profile</h4>
+            <div class="card shadow border-0">
+                <div class="card-header text-white py-3" style="background-color:#2B547E;">
+                    <h4 class="mb-0" style="color:#FFD700;">
+                        <i class="bi bi-person-circle me-2"></i>My Profile
+                    </h4>
                 </div>
                 <div class="card-body p-4">
                     <form action="updateProfile.php" method="POST" enctype="multipart/form-data">
@@ -43,9 +45,10 @@ mysqli_stmt_close($stmt);
                                     <img id="preview"
                                          src="<?php echo !empty($profile['img_path']) ? htmlspecialchars($profile['img_path']) : '../assets/default-avatar.png'; ?>"
                                          alt="Profile Image"
-                                         class="rounded-circle border border-3 border-dark"
-                                         style="width: 150px; height: 150px; object-fit: cover;">
-                                    <label for="img_path" class="position-absolute bottom-0 end-0 btn btn-sm btn-dark rounded-circle" style="width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                                         class="rounded-circle border border-3"
+                                         style="border-color:#2B547E; width: 150px; height: 150px; object-fit: cover;">
+                                    <label for="img_path" class="position-absolute bottom-0 end-0 btn btn-sm rounded-circle" 
+                                           style="background-color:#2B547E; color:#FFD700; width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer;">
                                         <i class="bi bi-camera-fill"></i>
                                     </label>
                                 </div>
@@ -56,7 +59,9 @@ mysqli_stmt_close($stmt);
 
                         <!-- Basic Information Section -->
                         <div class="mb-4">
-                            <h5 class="mb-3 fw-bold"><i class="bi bi-info-circle me-2"></i>Personal Information</h5>
+                            <h5 class="mb-3 fw-bold" style="color:#2B547E;">
+                                <i class="bi bi-info-circle me-2"></i>Personal Information
+                            </h5>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
@@ -83,7 +88,9 @@ mysqli_stmt_close($stmt);
 
                         <!-- Volunteer Details Section -->
                         <div class="mb-4">
-                            <h5 class="mb-3 fw-bold"><i class="bi bi-briefcase me-2"></i>Volunteer Information</h5>
+                            <h5 class="mb-3 fw-bold" style="color:#2B547E;">
+                                <i class="bi bi-briefcase me-2"></i>Volunteer Information
+                            </h5>
                             <div class="mb-3">
                                 <label for="skills" class="form-label">Your Skills</label>
                                 <textarea class="form-control" id="skills" name="skills" rows="3" placeholder="e.g., Teaching, Mentoring, Event Planning..."><?php echo htmlspecialchars($profile['skills']); ?></textarea>
@@ -102,10 +109,10 @@ mysqli_stmt_close($stmt);
 
                         <!-- Action Buttons -->
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end pt-3 border-top">
-                            <a href="index.php" class="btn btn-outline-secondary btn-lg">
+                            <a href="index.php" class="btn btn-lg fw-semibold" style="background-color:#FFD700; color:#2B547E;">
                                 <i class="bi bi-arrow-left me-2"></i>Cancel
                             </a>
-                            <button type="submit" name="submit" class="btn btn-dark btn-lg">
+                            <button type="submit" name="submit" class="btn btn-lg fw-semibold" style="background-color:#2B547E; color:#FFD700;">
                                 <i class="bi bi-check-circle me-2"></i>Save Changes
                             </button>
                         </div>

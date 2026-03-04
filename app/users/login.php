@@ -80,11 +80,13 @@ if (isset($_POST['submit'])) {
     <div class="row justify-content-center">
         <div class="col-md-6">
             <?php include("../../includes/alert.php"); ?>
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h4 class="text-center mb-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-header text-center text-white" style="background-color:#2B547E;">
+                    <h4 class="mb-0">
                         <i class="bi bi-person-circle me-2"></i>Login to Your Account
                     </h4>
+                </div>
+                <div class="card-body">
                     <form action="<?= htmlspecialchars($_SERVER['PHP_SELF']) ?>" method="POST">
                         <div class="mb-3">
                             <label for="form2Example1" class="form-label">Email address</label>
@@ -96,7 +98,10 @@ if (isset($_POST['submit'])) {
                             <label for="form2Example2" class="form-label">Password</label>
                             <input type="password" id="form2Example2" class="form-control" name="password">
                         </div>
-                        <button type="submit" class="btn btn-outline-primary w-100" name="submit">
+                        <button type="submit" 
+                                class="btn w-100 fw-semibold" 
+                                name="submit" 
+                                style="background-color:#2B547E; color:#FFD700; box-shadow:0 4px 8px rgba(0,0,0,0.4);">
                             <i class="bi bi-box-arrow-in-right me-1"></i> Sign in
                         </button>
                     </form>

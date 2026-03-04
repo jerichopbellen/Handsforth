@@ -57,7 +57,7 @@ mysqli_stmt_close($stmt);
     <!-- Welcome Header -->
     <div class="row mb-5">
         <div class="col-12">
-            <h1 class="display-5 fw-bold text-dark mb-2">Welcome, <?php echo htmlspecialchars($profile['first_name']); ?>!</h1>
+            <h1 class="display-5 fw-bold" style="color:#2B547E;">Welcome, <?php echo htmlspecialchars($profile['first_name']); ?>!</h1>
             <p class="text-muted">Track your volunteer journey and upcoming opportunities</p>
         </div>
     </div>
@@ -74,7 +74,7 @@ mysqli_stmt_close($stmt);
                         ?>
                         <img src="<?php echo $img_src; ?>" alt="Profile Picture" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
                     </div>
-                    <h5 class="card-title text-center text-dark"><?php echo htmlspecialchars($profile['first_name'] . " " . $profile['last_name']); ?></h5>
+                    <h5 class="card-title text-center" style="color:#2B547E;"><?php echo htmlspecialchars($profile['first_name'] . " " . $profile['last_name']); ?></h5>
                     <hr>
                     <small class="text-muted d-block mb-2"><strong>Email:</strong></small>
                     <p class="text-break"><?php echo htmlspecialchars($profile['email']); ?></p>
@@ -82,7 +82,7 @@ mysqli_stmt_close($stmt);
                     <p><?php echo htmlspecialchars($profile['phone'] ?? 'N/A'); ?></p>
                     <small class="text-muted d-block mb-2"><strong>Skills:</strong></small>
                     <p><?php echo htmlspecialchars($profile['skills'] ?? 'Not yet added'); ?></p>
-                    <a href="editProfile.php" class="btn btn-dark w-100 mt-3">
+                    <a href="editProfile.php" class="btn w-100 mt-3 fw-semibold" style="background-color:#2B547E; color:#FFD700;">
                         <i class="bi bi-pencil me-2"></i>Edit Profile
                     </a>
                 </div>
@@ -93,8 +93,8 @@ mysqli_stmt_close($stmt);
         <div class="col-lg-9">
             <!-- Upcoming Projects -->
             <div class="card border-0 mb-4" style="box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);">
-                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
-                    <h5 class="mb-0 text-black"><i class="bi bi-calendar-check me-2"></i>Upcoming Projects</h5>
+                <div class="card-header text-white" style="background-color:#2B547E;">
+                    <h5 class="mb-0" style="color:#FFD700;"><i class="bi bi-calendar-check me-2"></i>Upcoming Projects</h5>
                 </div>
                 <div class="card-body p-4">
                     <?php if (mysqli_num_rows($upcoming_result) > 0): ?>
@@ -102,7 +102,7 @@ mysqli_stmt_close($stmt);
                             <?php while ($row = mysqli_fetch_assoc($upcoming_result)): ?>
                                 <div class="col-md-6">
                                     <div class="border rounded p-3 h-100 hover-shadow" style="transition: all 0.3s; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
-                                        <h6 class="text-dark mb-2"><?php echo htmlspecialchars($row['title']); ?></h6>
+                                        <h6 class="mb-2" style="color:#2B547E;"><?php echo htmlspecialchars($row['title']); ?></h6>
                                         <p class="mb-2 small text-muted"><?php echo htmlspecialchars($row['description']); ?></p>
                                         <p class="mb-2">
                                             <i class="bi bi-calendar text-muted me-2"></i>
@@ -112,7 +112,7 @@ mysqli_stmt_close($stmt);
                                             <i class="bi bi-geo-alt text-muted me-2"></i>
                                             <small><?php echo htmlspecialchars($row['location']); ?></small>
                                         </p>
-                                        <span class="badge bg-info text-dark"><?php echo ucfirst($row['role_in_project']); ?></span>
+                                        <span class="badge" style="background-color:#FFD700; color:#2B547E;"><?php echo ucfirst($row['role_in_project']); ?></span>
                                     </div>
                                 </div>
                             <?php endwhile; ?>
@@ -128,8 +128,8 @@ mysqli_stmt_close($stmt);
 
             <!-- Completed Projects -->
             <div class="card border-0" style="box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);">
-                <div class="card-header bg-gradient text-black" style="background: linear-gradient(135deg, #6c757d 0%, #495057 100%);">
-                    <h5 class="mb-0 text-black"><i class="bi bi-check-circle me-2"></i>Completed Projects</h5>
+                <div class="card-header text-white" style="background-color:#2B547E;">
+                    <h5 class="mb-0" style="color:#FFD700;"><i class="bi bi-check-circle me-2"></i>Completed Projects</h5>
                 </div>
                 <div class="card-body p-4">
                     <?php if (mysqli_num_rows($completed_result) > 0): ?>
@@ -138,7 +138,7 @@ mysqli_stmt_close($stmt);
                                 <div class="col-md-6">
                                     <div class="border rounded p-3 h-100" style="background-color: #f8f9fa; transition: all 0.3s;">
                                         <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <h6 class="text-dark mb-0"><?php echo htmlspecialchars($row['title']); ?></h6>
+                                            <h6 class="mb-0" style="color:#2B547E;"><?php echo htmlspecialchars($row['title']); ?></h6>
                                             <?php if ($row['attendance_status']): ?>
                                                 <span class="badge <?php echo $row['attendance_status'] === 'present' ? 'bg-success' : ($row['attendance_status'] === 'late' ? 'bg-warning text-dark' : 'bg-danger'); ?>">
                                                     <?php echo ucfirst($row['attendance_status']); ?>
@@ -155,7 +155,15 @@ mysqli_stmt_close($stmt);
                                         </p>
                                         <p class="mb-0">
                                             <i class="bi bi-hourglass-split text-muted me-2"></i>
-                                            <small><?php echo ($row['attendance_status'] !== 'absent' && $row['check_in_time'] && $row['check_out_time']) ? round((strtotime($row['check_out_time']) - strtotime($row['check_in_time'])) / 3600, 1) . ' hrs' : '-'; ?></small>
+                                             <small>
+                                                    <?php 
+                                                    echo ($row['attendance_status'] !== 'absent' 
+                                                        && $row['check_in_time'] 
+                                                        && $row['check_out_time']) 
+                                                        ? round((strtotime($row['check_out_time']) - strtotime($row['check_in_time'])) / 3600, 1) . ' hrs' 
+                                                        : '-'; 
+                                                    ?>
+                                            </small>
                                         </p>
                                     </div>
                                 </div>
