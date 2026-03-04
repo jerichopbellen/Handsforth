@@ -16,13 +16,11 @@ if (!$donation_id) {
     exit();
 }
 
-$sql = "SELECT * FROM donations WHERE donation_id = ?";
-$stmt = mysqli_prepare($conn, $sql);
-mysqli_stmt_bind_param($stmt, 'i', $donation_id);
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-$donation = mysqli_fetch_assoc($result);
-mysqli_stmt_close($stmt);
+
+$stmt = $pdo->prepare("SELECT * FROM donations WHERE donation_id = ?");
+$stmt->execute([$donation_id]);
+$donation = $stmt->fetch(PDO::FETCH_ASSOC);
+
 
 if (!$donation) {
     $_SESSION['error'] = 'Donation not found';
@@ -30,26 +28,33 @@ if (!$donation) {
     exit();
 }
 
-if (isset($_POST['confirm_delete'])) {
-    $delete_sql = "DELETE FROM donations WHERE donation_id = ?";
-    $delete_stmt = mysqli_prepare($conn, $delete_sql);
-    
-    if (!$delete_stmt) {
-        $_SESSION['error'] = 'Database error: ' . mysqli_error($conn);
-        header("Location: index.php");
-        exit();
+// Fetch donor name for display
+$donor_name = 'Anonymous';
+if (!empty($donation['donor_id'])) {
+    $donor_stmt = $pdo->prepare("SELECT name FROM donors WHERE donor_id = ?");
+    $donor_stmt->execute([$donation['donor_id']]);
+    $donor = $donor_stmt->fetch(PDO::FETCH_ASSOC);
+    if ($donor && !empty($donor['name'])) {
+        $donor_name = $donor['name'];
     }
+}
 
-    mysqli_stmt_bind_param($delete_stmt, 'i', $donation_id);
-
-    if (mysqli_stmt_execute($delete_stmt)) {
+if (isset($_POST['confirm_delete'])) {
+    try {
+        $pdo->beginTransaction();
+        // Delete related monetary_details and donation_items
+        $pdo->prepare("DELETE FROM monetary_details WHERE donation_id = ?")->execute([$donation_id]);
+        $pdo->prepare("DELETE FROM donation_items WHERE donation_id = ?")->execute([$donation_id]);
+        // Delete donation
+        $stmt = $pdo->prepare("DELETE FROM donations WHERE donation_id = ?");
+        $stmt->execute([$donation_id]);
+        $pdo->commit();
         $_SESSION['success'] = 'Donation deleted successfully';
-        mysqli_stmt_close($delete_stmt);
         header("Location: index.php");
         exit();
-    } else {
-        $_SESSION['error'] = 'Failed to delete donation: ' . mysqli_stmt_error($delete_stmt);
-        mysqli_stmt_close($delete_stmt);
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        $_SESSION['error'] = 'Failed to delete donation: ' . $e->getMessage();
         header("Location: index.php");
         exit();
     }
@@ -68,7 +73,7 @@ if (isset($_POST['confirm_delete'])) {
                 <div class="card-body">
                     <p class="text-muted">Are you sure you want to delete this donation?</p>
                     <div class="bg-light p-3 rounded mb-3">
-                        <p><strong>Donor:</strong> <?php echo htmlspecialchars($donation['donor_name'] ?? 'Anonymous'); ?></p>
+                        <p><strong>Donor:</strong> <?php echo htmlspecialchars($donor_name); ?></p>
                         <p><strong>Type:</strong> <?php echo htmlspecialchars($donation['donation_type']); ?></p>
                         <p><strong>Date:</strong> <?php echo htmlspecialchars($donation['date_received']); ?></p>
                     </div>

@@ -12,8 +12,11 @@ $filter_type = isset($_GET['type']) ? $_GET['type'] : '';
 $filter_date_from = isset($_GET['date_from']) ? $_GET['date_from'] : '';
 $filter_date_to = isset($_GET['date_to']) ? $_GET['date_to'] : '';
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$sort = isset($_GET['sort']) ? $_GET['sort'] : '';
+$allowedSort = ['donor_name', 'donation_type', 'amount', 'date_received'];
 
-$sql = "SELECT donation_id, donor_name, donation_type, amount, description, date_received FROM donations WHERE 1=1";
+// Initialize SQL query
+$sql = "SELECT donation_id, donation_type, amount, description, date_received, donor_id FROM donations WHERE 1=1";
 $params = array();
 $types = '';
 
@@ -24,11 +27,10 @@ if ($filter_type) {
 }
 
 if ($search) {
-    $sql .= " AND (donor_name LIKE ? OR description LIKE ?)";
+    $sql .= " AND (description LIKE ?)";
     $search_param = '%' . $search . '%';
     $params[] = $search_param;
-    $params[] = $search_param;
-    $types .= 'ss';
+    $types .= 's';
 }
 
 if ($filter_date_from) {
@@ -43,7 +45,12 @@ if ($filter_date_to) {
     $types .= 's';
 }
 
-$sql .= " ORDER BY date_received DESC";
+// Sorting logic
+if (in_array($sort, $allowedSort)) {
+    $sql .= " ORDER BY $sort DESC";
+} else {
+    $sql .= " ORDER BY date_received DESC";
+}
 
 $stmt = mysqli_prepare($conn, $sql);
 
@@ -56,13 +63,44 @@ $result = mysqli_stmt_get_result($stmt);
 $donations = mysqli_fetch_all($result, MYSQLI_ASSOC);
 mysqli_stmt_close($stmt);
 
-$total_funds_sql = "SELECT SUM(amount) as total FROM donations WHERE donation_type = 'funds'";
+// Fetch monetary amount for 'funds' donations
+foreach ($donations as $i => $donation) {
+    if ($donation['donation_type'] === 'funds') {
+        $stmt = mysqli_prepare($conn, "SELECT amount FROM monetary_details WHERE donation_id = ?");
+        mysqli_stmt_bind_param($stmt, 'i', $donation['donation_id']);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $row = mysqli_fetch_assoc($result);
+        $donations[$i]['amount'] = $row['amount'] ?? 0;
+        mysqli_stmt_close($stmt);
+    }
+    if (!empty($donation['donor_id'])) {
+        $donor_stmt = mysqli_prepare($conn, "SELECT name FROM donors WHERE donor_id = ?");
+        mysqli_stmt_bind_param($donor_stmt, 'i', $donation['donor_id']);
+        mysqli_stmt_execute($donor_stmt);
+        $donor_result = mysqli_stmt_get_result($donor_stmt);
+        $donor = mysqli_fetch_assoc($donor_result);
+        $donations[$i]['donor_name'] = $donor['name'] ?? '';
+        mysqli_stmt_close($donor_stmt);
+    } else {
+        $donations[$i]['donor_name'] = '';
+    }
+}
+
+// Calculate total funds from monetary_details
+$total_funds_sql = "SELECT SUM(amount) as total FROM monetary_details";
 $total_funds_result = mysqli_query($conn, $total_funds_sql);
 $total_funds = mysqli_fetch_assoc($total_funds_result)['total'] ?? 0;
 
-$total_goods_sql = "SELECT COUNT(*) as total FROM donations WHERE donation_type = 'goods'";
+// Calculate total goods items from donation_items
+$total_goods_sql = "SELECT SUM(quantity) as total FROM donation_items";
 $total_goods_result = mysqli_query($conn, $total_goods_sql);
 $total_goods = mysqli_fetch_assoc($total_goods_result)['total'] ?? 0;
+
+// RBAC: Only allow actions based on user role
+$can_edit = isset($_SESSION['role']) && ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'donation_manager');
+$can_delete = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+$can_distribute = isset($_SESSION['role']) && ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'distribution_manager');
 ?>
 
 <div class="container my-5">
@@ -127,10 +165,10 @@ $total_goods = mysqli_fetch_assoc($total_goods_result)['total'] ?? 0;
         <table class="table table-hover">
             <thead class="table-dark">
                 <tr>
-                    <th>Donor Name</th>
-                    <th>Type</th>
-                    <th>Amount/Description</th>
-                    <th>Date Received</th>
+                    <th><a href="?sort=donor_name">Donor Name</a></th>
+                    <th><a href="?sort=donation_type">Type</a></th>
+                    <th><a href="?sort=amount">Amount/Description</a></th>
+                    <th><a href="?sort=date_received">Date Received</a></th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -142,7 +180,7 @@ $total_goods = mysqli_fetch_assoc($total_goods_result)['total'] ?? 0;
                 <?php else: ?>
                     <?php foreach ($donations as $donation): ?>
                         <tr>
-                            <td><?php echo htmlspecialchars($donation['donor_name'] ?? 'Anonymous'); ?></td>
+                            <td><?php echo htmlspecialchars($donation['donor_name']); ?></td>
                             <td>
                                 <?php if ($donation['donation_type'] === 'funds'): ?>
                                     <span class="badge bg-success">Funds</span>
@@ -164,15 +202,21 @@ $total_goods = mysqli_fetch_assoc($total_goods_result)['total'] ?? 0;
                                 <a href="viewDonation.php?id=<?php echo $donation['donation_id']; ?>" class="btn btn-sm btn-info" title="View Details">
                                     <i class="bi bi-eye"></i>
                                 </a>
+                                <?php if ($can_edit): ?>
                                 <a href="editDonation.php?id=<?php echo $donation['donation_id']; ?>" class="btn btn-sm btn-warning" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </a>
+                                <?php endif; ?>
+                                <?php if ($can_delete): ?>
                                 <a href="deleteDonation.php?id=<?php echo $donation['donation_id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?');" title="Delete">
                                     <i class="bi bi-trash"></i>
                                 </a>
+                                <?php endif; ?>
+                                <?php if ($can_distribute): ?>
                                 <a href="distributeDonation.php?id=<?php echo $donation['donation_id']; ?>" class="btn btn-sm btn-primary" title="Distribute">
                                     <i class="bi bi-arrow-right-circle"></i>
                                 </a>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

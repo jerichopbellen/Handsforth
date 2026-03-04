@@ -10,53 +10,41 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 $filter_project = isset($_GET['project']) ? intval($_GET['project']) : '';
 
-$sql = "SELECT rd.distribution_id, rd.date_distributed, rd.quantity_distributed, 
-               d.donor_name, d.donation_type, d.amount, d.description,
+
+$sql = "SELECT dists.distribution_id, dists.date_distributed, dists.quantity_distributed, 
+               donors.name AS donor_name, dn.donation_type, dn.amount, dn.description,
                p.title as project_title
-        FROM resource_distribution rd
-        JOIN donations d ON rd.donation_id = d.donation_id
-        JOIN projects p ON rd.project_id = p.project_id
+        FROM distributions dists
+        JOIN donations dn ON dists.donation_id = dn.donation_id
+        LEFT JOIN donors ON dn.donor_id = donors.donor_id
+        JOIN projects p ON dists.project_id = p.project_id
         WHERE 1=1";
 
-$params = array();
-$types = '';
-
+$params = [];
 if ($filter_project) {
-    $sql .= " AND rd.project_id = ?";
+    $sql .= " AND dists.project_id = ?";
     $params[] = $filter_project;
-    $types .= 'i';
 }
+$sql .= " ORDER BY dists.date_distributed DESC";
 
-$sql .= " ORDER BY rd.date_distributed DESC";
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$distributions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$stmt = mysqli_prepare($conn, $sql);
 
-if ($params) {
-    mysqli_stmt_bind_param($stmt, $types, ...$params);
-}
+$projects = $pdo->query("SELECT DISTINCT p.project_id, p.title FROM projects p JOIN distributions dists ON p.project_id = dists.project_id ORDER BY p.title")->fetchAll(PDO::FETCH_ASSOC);
 
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-$distributions = mysqli_fetch_all($result, MYSQLI_ASSOC);
-mysqli_stmt_close($stmt);
-
-$projects_sql = "SELECT DISTINCT p.project_id, p.title FROM projects p 
-                 JOIN resource_distribution rd ON p.project_id = rd.project_id 
-                 ORDER BY p.title";
-$projects_result = mysqli_query($conn, $projects_sql);
-$projects = mysqli_fetch_all($projects_result, MYSQLI_ASSOC);
 
 $summary_sql = "SELECT p.project_id, p.title, 
-                       COUNT(rd.distribution_id) as total_distributions,
-                       SUM(CASE WHEN d.donation_type = 'funds' THEN rd.quantity_distributed ELSE 0 END) as total_funds,
-                       COUNT(CASE WHEN d.donation_type = 'goods' THEN 1 END) as goods_count
-                FROM projects p
-                LEFT JOIN resource_distribution rd ON p.project_id = rd.project_id
-                LEFT JOIN donations d ON rd.donation_id = d.donation_id
-                GROUP BY p.project_id, p.title
-                ORDER BY p.title";
-$summary_result = mysqli_query($conn, $summary_sql);
-$summary = mysqli_fetch_all($summary_result, MYSQLI_ASSOC);
+              COUNT(dists.distribution_id) as total_distributions,
+              SUM(CASE WHEN dn.donation_type = 'funds' THEN dists.quantity_distributed ELSE 0 END) as total_funds,
+              COUNT(CASE WHEN dn.donation_type = 'goods' THEN 1 END) as goods_count
+          FROM projects p
+          LEFT JOIN distributions dists ON p.project_id = dists.project_id
+          LEFT JOIN donations dn ON dists.donation_id = dn.donation_id
+          GROUP BY p.project_id, p.title
+          ORDER BY p.title";
+$summary = $pdo->query($summary_sql)->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <div class="container my-5">

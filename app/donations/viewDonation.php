@@ -17,13 +17,10 @@ if (!$donation_id) {
 
 // Fetch donation details
 
-$sql = "SELECT d.*, donors.name, donors.email, donors.phone FROM donations d LEFT JOIN donors ON d.donor_id = donors.donor_id WHERE d.donation_id = ?";
-$stmt = mysqli_prepare($conn, $sql);
-mysqli_stmt_bind_param($stmt, 'i', $donation_id);
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-$donation = mysqli_fetch_assoc($result);
-mysqli_stmt_close($stmt);
+
+$stmt = $pdo->prepare("SELECT d.*, donors.name, donors.email, donors.phone FROM donations d LEFT JOIN donors ON d.donor_id = donors.donor_id WHERE d.donation_id = ?");
+$stmt->execute([$donation_id]);
+$donation = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$donation) {
     $_SESSION['error'] = 'Donation not found';
@@ -31,14 +28,21 @@ if (!$donation) {
     exit();
 }
 
-// Fetch distribution history
-$dist_sql = "SELECT rd.*, p.title as project_title FROM resource_distribution rd JOIN projects p ON rd.project_id = p.project_id WHERE rd.donation_id = ? ORDER BY rd.date_distributed DESC";
-$dist_stmt = mysqli_prepare($conn, $dist_sql);
-mysqli_stmt_bind_param($dist_stmt, 'i', $donation_id);
-mysqli_stmt_execute($dist_stmt);
-$dist_result = mysqli_stmt_get_result($dist_stmt);
-$distributions = mysqli_fetch_all($dist_result, MYSQLI_ASSOC);
-mysqli_stmt_close($dist_stmt);
+// Fetch monetary amount for 'funds' donations
+
+if ($donation['donation_type'] === 'funds') {
+    $stmt = $pdo->prepare("SELECT amount FROM monetary_details WHERE donation_id = ?");
+    $stmt->execute([$donation_id]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $donation['amount'] = $row['amount'] ?? 0;
+}
+
+// Fetch distributions
+
+$dist_sql = "SELECT dists.*, p.title AS project_title FROM distributions dists LEFT JOIN projects p ON dists.project_id = p.project_id WHERE dists.donation_id = ? ORDER BY dists.distributed_date DESC";
+$dist_stmt = $pdo->prepare($dist_sql);
+$dist_stmt->execute([$donation_id]);
+$distributions = $dist_stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <div class="container my-5">
     <?php include("../../includes/alert.php"); ?>
@@ -48,17 +52,73 @@ mysqli_stmt_close($dist_stmt);
     </div>
     <div class="card mb-4">
         <div class="card-body">
-            <?php if ($donation['anonymous']): ?>
-                <h5 class="card-title">Donor: Anonymous</h5>
-            <?php else: ?>
+            <?php if (!empty($donation['name'])): ?>
                 <h5 class="card-title">Donor Name: <?php echo htmlspecialchars($donation['name']); ?></h5>
                 <p><strong>Email:</strong> <?php echo htmlspecialchars($donation['email']); ?></p>
                 <p><strong>Phone:</strong> <?php echo htmlspecialchars($donation['phone']); ?></p>
             <?php endif; ?>
             <p><strong>Type:</strong> <?php echo htmlspecialchars($donation['donation_type']); ?></p>
-            <p><strong>Amount:</strong> <?php echo $donation['donation_type'] === 'funds' ? '$' . htmlspecialchars($donation['amount']) : 'N/A'; ?></p>
-            <p><strong>Description:</strong> <?php echo htmlspecialchars($donation['description']); ?></p>
+            <p><strong>Amount:</strong> <?php 
+                if ($donation['donation_type'] === 'funds') {
+                    echo '$' . htmlspecialchars($donation['amount']);
+                } else {
+                    // For goods, show estimated value if available, else show quantity from donation_items
+                    $item_stmt = $pdo->prepare("SELECT SUM(estimated_value) as total_value, SUM(quantity) as total_qty FROM donation_items WHERE donation_id = ?");
+                    $item_stmt->execute([$donation_id]);
+                    $item_row = $item_stmt->fetch(PDO::FETCH_ASSOC);
+                    if (!empty($item_row['total_value'])) {
+                        echo '$' . number_format($item_row['total_value'], 2) . ' (estimated value)';
+                    } elseif (!empty($item_row['total_qty'])) {
+                        echo $item_row['total_qty'] . ' items';
+                    } else {
+                        echo 'N/A';
+                    }
+                }
+            ?></p>
+            <p><strong>Description:</strong> <?php 
+                if ($donation['donation_type'] === 'goods') {
+                    // For goods, show concatenated item descriptions
+                    $desc_stmt = $pdo->prepare("SELECT GROUP_CONCAT(description SEPARATOR '; ') as descriptions FROM donation_items WHERE donation_id = ?");
+                    $desc_stmt->execute([$donation_id]);
+                    $desc_row = $desc_stmt->fetch(PDO::FETCH_ASSOC);
+                    echo htmlspecialchars($desc_row['descriptions'] ?? $donation['description']);
+                } else {
+                    echo htmlspecialchars($donation['description']);
+                }
+            ?></p>
             <p><strong>Date Received:</strong> <?php echo htmlspecialchars($donation['date_received']); ?></p>
+            <?php if ($donation['donation_type'] === 'funds') {
+                $details_stmt = $pdo->prepare("SELECT payment_method, check_number, designation, recurring FROM monetary_details WHERE donation_id = ?");
+                $details_stmt->execute([$donation_id]);
+                $details = $details_stmt->fetch(PDO::FETCH_ASSOC);
+                if ($details) {
+            ?>
+                <p><strong>Payment Method:</strong> <?php echo htmlspecialchars($details['payment_method']); ?></p>
+                <?php if (!empty($details['check_number'])): ?><p><strong>Check Number:</strong> <?php echo htmlspecialchars($details['check_number']); ?></p><?php endif; ?>
+                <p><strong>Designation:</strong> <?php echo htmlspecialchars($details['designation']); ?></p>
+                <p><strong>Recurring:</strong> <?php echo $details['recurring'] ? 'Yes' : 'No'; ?></p>
+            <?php }} ?>
+            <p><strong>Staff:</strong> <?php 
+                if (!empty($donation['staff_id'])) {
+                    $staff_stmt = $pdo->prepare("SELECT first_name, last_name FROM users WHERE user_id = ?");
+                    $staff_stmt->execute([$donation['staff_id']]);
+                    $staff = $staff_stmt->fetch(PDO::FETCH_ASSOC);
+                    if ($staff) {
+                        echo htmlspecialchars(trim($staff['first_name'] . ' ' . $staff['last_name']));
+                    } else {
+                        echo htmlspecialchars($donation['staff_id']);
+                    }
+                } else {
+                    echo 'N/A';
+                }
+            ?></p>
+            <?php if (!empty($donation['receipt_file'])): ?>
+                <p><strong>Receipt:</strong> <a href="<?php echo htmlspecialchars($donation['receipt_file']); ?>" target="_blank">Download</a></p>
+            <?php endif; ?>
+            <p><strong>Transaction Number:</strong> <?php echo htmlspecialchars($donation['txn_number']); ?></p>
+            <p><strong>Status:</strong> <?php echo htmlspecialchars($donation['status']); ?></p>
+            <p><strong>Created At:</strong> <?php echo htmlspecialchars($donation['created_at']); ?></p>
+            <p><strong>Updated At:</strong> <?php echo htmlspecialchars($donation['updated_at']); ?></p>
         </div>
     </div>
     <h4>Distribution History</h4>
@@ -86,5 +146,11 @@ mysqli_stmt_close($dist_stmt);
             </tbody>
         </table>
     </div>
+    <h5>Linked Distributions</h5>
+    <ul>
+    <?php foreach ($distributions as $dist): ?>
+        <li>Beneficiary ID: <?php echo $dist['beneficiary_id']; ?>, Project ID: <?php echo $dist['project_id']; ?>, Amount: $<?php echo $dist['distributed_amount']; ?>, Date: <?php echo $dist['distributed_date']; ?></li>
+    <?php endforeach; ?>
+    </ul>
 </div>
 <?php include("../../includes/footer.php"); ?>

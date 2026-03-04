@@ -19,13 +19,10 @@ if (!$donation_id) {
     exit();
 }
 
-$sql = "SELECT * FROM donations WHERE donation_id = ?";
-$stmt = mysqli_prepare($conn, $sql);
-mysqli_stmt_bind_param($stmt, 'i', $donation_id);
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-$donation = mysqli_fetch_assoc($result);
-mysqli_stmt_close($stmt);
+
+$stmt = $pdo->prepare("SELECT * FROM donations WHERE donation_id = ?");
+$stmt->execute([$donation_id]);
+$donation = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$donation) {
     $_SESSION['error'] = 'Donation not found';
@@ -33,13 +30,12 @@ if (!$donation) {
     exit();
 }
 
-$projects_sql = "SELECT project_id, title FROM projects WHERE status IN ('planned', 'ongoing') ORDER BY title";
-$projects_result = mysqli_query($conn, $projects_sql);
-$projects = mysqli_fetch_all($projects_result, MYSQLI_ASSOC);
+
+$projects = $pdo->query("SELECT project_id, title FROM projects WHERE status IN ('planned', 'ongoing') ORDER BY title")->fetchAll(PDO::FETCH_ASSOC);
 
 if (isset($_POST['submit'])) {
     $project_id = intval($_POST['project_id'] ?? 0);
-    $quantity_distributed = intval($_POST['quantity_distributed'] ?? 0);
+    $quantity_distributed = floatval($_POST['quantity_distributed'] ?? 0);
     $date_distributed = trim($_POST['date_distributed'] ?? '');
 
     if (!$project_id) {
@@ -60,33 +56,27 @@ if (isset($_POST['submit'])) {
         exit();
     }
 
-    if ($donation['donation_type'] === 'funds' && $quantity_distributed > $donation['amount']) {
-        $_SESSION['error'] = 'Distribution amount cannot exceed donation amount';
-        header("Location: distributeDonation.php?id=$donation_id");
-        exit();
+    // For funds, ensure not over-distributed
+    if ($donation['donation_type'] === 'funds') {
+        $stmt = $pdo->prepare("SELECT SUM(quantity_distributed) FROM distributions WHERE donation_id = ?");
+        $stmt->execute([$donation_id]);
+        $already_distributed = floatval($stmt->fetchColumn());
+        $remaining = floatval($donation['amount']) - $already_distributed;
+        if ($quantity_distributed > $remaining) {
+            $_SESSION['error'] = 'Distribution amount cannot exceed remaining donation amount ($' . number_format($remaining,2) . ')';
+            header("Location: distributeDonation.php?id=$donation_id");
+            exit();
+        }
     }
 
-    $insert_sql = "INSERT INTO resource_distribution (project_id, donation_id, quantity_distributed, date_distributed) 
-                   VALUES (?, ?, ?, ?)";
-    
-    $insert_stmt = mysqli_prepare($conn, $insert_sql);
-    
-    if (!$insert_stmt) {
-        $_SESSION['error'] = 'Database error: ' . mysqli_error($conn);
-        header("Location: distributeDonation.php?id=$donation_id");
-        exit();
-    }
-
-    mysqli_stmt_bind_param($insert_stmt, 'iiis', $project_id, $donation_id, $quantity_distributed, $date_distributed);
-
-    if (mysqli_stmt_execute($insert_stmt)) {
+    try {
+        $stmt = $pdo->prepare("INSERT INTO distributions (project_id, donation_id, quantity_distributed, date_distributed) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$project_id, $donation_id, $quantity_distributed, $date_distributed]);
         $_SESSION['success'] = 'Resource distributed successfully';
-        mysqli_stmt_close($insert_stmt);
         header("Location: index.php");
         exit();
-    } else {
-        $_SESSION['error'] = 'Failed to distribute resource: ' . mysqli_stmt_error($insert_stmt);
-        mysqli_stmt_close($insert_stmt);
+    } catch (Exception $e) {
+        $_SESSION['error'] = 'Failed to distribute resource: ' . $e->getMessage();
         header("Location: distributeDonation.php?id=$donation_id");
         exit();
     }

@@ -47,44 +47,41 @@ if (isset($_POST['submit'])) {
             $donor_id = $pdo->lastInsertId();
         }
 
+        // Duplicate entry detection
+        if ($donor_id) {
+            $dup_stmt = $pdo->prepare("SELECT COUNT(*) FROM donations WHERE donor_id = ? AND amount = ? AND date_received = ?");
+            $dup_stmt->execute([$donor_id, $amount, $date_received]);
+            $is_duplicate = $dup_stmt->fetchColumn() > 0;
+            if ($is_duplicate) {
+                $_SESSION['error'] = 'Duplicate donation entry detected.';
+                header("Location: addDonation.php");
+                exit();
+            }
+        }
+
         // Header
-        $donation_type_db = $donation_type === 'funds' ? 'monetary' : 'in-kind';
-        $total_value = 0;
-        $stmt = $pdo->prepare("INSERT INTO donations (donor_id, staff_id, txn_number, donation_type, total_value, date_received) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$donor_id, $staff_id, $txn_number, $donation_type_db, $total_value, $date_received]);
+        $donation_type_db = $donation_type === 'funds' ? 'funds' : 'goods';
+        $stmt = $pdo->prepare("INSERT INTO donations (donor_id, staff_id, txn_number, donation_type, date_received) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$donor_id, $staff_id, $txn_number, $donation_type_db, $date_received]);
         $donation_id = $pdo->lastInsertId();
 
-        if ($donation_type === 'goods') {
-            // In-kind items
-            $items = $_POST['items'] ?? [];
-            $item_total = 0;
-            foreach ($items as $item) {
-                $stmt = $pdo->prepare("INSERT INTO donation_items (donation_id, category, item_condition, quantity, unit, estimated_value, value_source, photo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                $photo = '';
-                if (!empty($_FILES['item_photos']['name'][$item['idx']])) {
-                    $tmp = $_FILES['item_photos']['tmp_name'][$item['idx']];
-                    $name = basename($_FILES['item_photos']['name'][$item['idx']]);
-                    $target = '../../assets/uploads/' . uniqid() . '_' . $name;
-                    if (move_uploaded_file($tmp, $target)) {
-                        $photo = $target;
-                    }
-                }
-                $stmt->execute([
-                    $donation_id,
-                    $item['category'],
-                    $item['condition'],
-                    $item['quantity'],
-                    $item['unit'],
-                    $item['estimated_value'],
-                    $item['value_source'],
-                    $photo
-                ]);
-                $item_total += floatval($item['estimated_value']);
+        // File upload for receipts/tax documents in addDonation.php
+        if (!empty($_FILES['receipt']['name'])) {
+            $target_dir = '../../uploads/';
+            $target_file = $target_dir . uniqid() . '_' . basename($_FILES['receipt']['name']);
+            if (move_uploaded_file($_FILES['receipt']['tmp_name'], $target_file)) {
+                $receipt_path = $target_file;
+            } else {
+                $receipt_path = '';
             }
-            // Update total value
-            $pdo->prepare("UPDATE donations SET total_value = ? WHERE donation_id = ?")->execute([$item_total, $donation_id]);
         } else {
-            // Monetary
+            $receipt_path = '';
+        }
+        // Save receipt path in donations table
+        $stmt = $pdo->prepare("UPDATE donations SET receipt_file = ? WHERE donation_id = ?");
+        $stmt->execute([$receipt_path, $donation_id]);
+
+        if ($donation_type === 'funds') {
             $amount = floatval($_POST['amount'] ?? 0);
             $payment_method = $_POST['payment_method'] ?? '';
             $check_number = $_POST['check_number'] ?? null;
@@ -94,7 +91,6 @@ if (isset($_POST['submit'])) {
             }
             $stmt = $pdo->prepare("INSERT INTO monetary_details (donation_id, amount, payment_method, check_number, designation) VALUES (?, ?, ?, ?, ?)");
             $stmt->execute([$donation_id, $amount, $payment_method, $check_number, $designation]);
-            $pdo->prepare("UPDATE donations SET total_value = ? WHERE donation_id = ?")->execute([$amount, $donation_id]);
         }
         $pdo->commit();
         $_SESSION['success'] = 'Donation added successfully';
@@ -170,6 +166,10 @@ if (isset($_POST['submit'])) {
                                 <label for="designation" class="form-label">Fund Designation</label>
                                 <input type="text" class="form-control" id="designation" name="designation" placeholder="e.g. Building Fund, General Operations, Emergency Relief">
                             </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="2" placeholder="Describe the donation purpose or notes"></textarea>
+                            </div>
                             <div class="mb-3 form-check">
                                 <input type="checkbox" class="form-check-input" id="recurring" name="recurring">
                                 <label class="form-check-label" for="recurring">Recurring Monthly Gift</label>
@@ -179,6 +179,10 @@ if (isset($_POST['submit'])) {
                             <label class="form-label">Items Donated</label>
                             <div id="item_rows"></div>
                             <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addItemRow()">Add Another Item</button>
+                            <div class="mb-3 mt-3">
+                                <label for="description_goods" class="form-label">Description</label>
+                                <textarea class="form-control" id="description_goods" name="description" rows="2" placeholder="Describe the goods donation purpose or notes"></textarea>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="date_received" class="form-label">Date Received <span class="text-danger">*</span></label>

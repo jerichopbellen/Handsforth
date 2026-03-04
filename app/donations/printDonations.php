@@ -13,7 +13,7 @@ $filter_date_from = isset($_GET['date_from']) ? $_GET['date_from'] : '';
 $filter_date_to = isset($_GET['date_to']) ? $_GET['date_to'] : '';
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-$sql = "SELECT donation_id, donor_name, donation_type, amount, description, date_received FROM donations WHERE 1=1";
+$sql = "SELECT d.donation_id, donors.name AS donor_name, d.donation_type, d.amount, d.description, d.date_received FROM donations d LEFT JOIN donors ON d.donor_id = donors.donor_id WHERE 1=1";
 $params = array();
 $types = '';
 
@@ -23,7 +23,7 @@ if ($filter_type) {
     $types .= 's';
 }
 if ($search) {
-    $sql .= " AND (donor_name LIKE ? OR description LIKE ?)";
+    $sql .= " AND (donors.name LIKE ? OR d.description LIKE ?)";
     $search_param = '%' . $search . '%';
     $params[] = $search_param;
     $params[] = $search_param;
@@ -83,6 +83,15 @@ mysqli_stmt_close($stmt);
                 <th>Amount</th>
                 <th>Description</th>
                 <th>Date Received</th>
+                <th>Payment Method</th>
+                <th>Designation</th>
+                <th>Recurring</th>
+                <th>Staff</th>
+                <th>Receipt</th>
+                <th>Transaction #</th>
+                <th>Status</th>
+                <th>Created At</th>
+                <th>Updated At</th>
             </tr>
         </thead>
         <tbody>
@@ -94,6 +103,15 @@ mysqli_stmt_close($stmt);
                     <td><?php echo $donation['donation_type'] === 'funds' ? '$' . htmlspecialchars($donation['amount']) : 'N/A'; ?></td>
                     <td><?php echo htmlspecialchars($donation['description']); ?></td>
                     <td><?php echo htmlspecialchars($donation['date_received']); ?></td>
+                    <td><?php echo htmlspecialchars($donation['payment_method'] ?? ''); ?></td>
+                    <td><?php echo htmlspecialchars($donation['designation'] ?? ''); ?></td>
+                    <td><?php echo !empty($donation['recurring']) ? 'Yes' : 'No'; ?></td>
+                    <td><?php echo htmlspecialchars($donation['staff_name'] ?? ''); ?></td>
+                    <td><?php if (!empty($donation['receipt_file'])): ?><a href="<?php echo htmlspecialchars($donation['receipt_file']); ?>" target="_blank">Download</a><?php endif; ?></td>
+                    <td><?php echo htmlspecialchars($donation['txn_number'] ?? ''); ?></td>
+                    <td><?php echo htmlspecialchars($donation['status'] ?? ''); ?></td>
+                    <td><?php echo htmlspecialchars($donation['created_at'] ?? ''); ?></td>
+                    <td><?php echo htmlspecialchars($donation['updated_at'] ?? ''); ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>

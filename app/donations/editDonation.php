@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 include("../../includes/header.php");
@@ -48,11 +47,9 @@ if (isset($_POST['submit'])) {
 
     $donation_type = $_POST['donation_type'] ?? '';
     $date_received = $_POST['date_received'] ?? date('Y-m-d');
-    $anonymous = isset($_POST['anonymous']) ? 1 : 0;
-
-    // Update donation header
-    $stmt = $pdo->prepare("UPDATE donations SET donor_id = ?, donation_type = ?, date_received = ?, anonymous = ? WHERE donation_id = ?");
-    $stmt->execute([$donor_id, $donation_type, $date_received, $anonymous, $donation_id]);
+    // Remove 'anonymous' from update if not in schema
+    $stmt = $pdo->prepare("UPDATE donations SET donor_id = ?, donation_type = ?, date_received = ? WHERE donation_id = ?");
+    $stmt->execute([$donor_id, $donation_type, $date_received, $donation_id]);
 
     if ($donation_type === 'goods') {
         // Handle in-kind items
@@ -71,7 +68,8 @@ if (isset($_POST['submit'])) {
             ]);
             $item_total += floatval($item['estimated_value']);
         }
-        $pdo->prepare("UPDATE donations SET total_value = ? WHERE donation_id = ?")->execute([$item_total, $donation_id]);
+        // Remove total_value update if not in schema
+        // $pdo->prepare("UPDATE donations SET total_value = ? WHERE donation_id = ?")->execute([$item_total, $donation_id]);
     } else {
         // Handle monetary details
         $amount = floatval($_POST['amount'] ?? 0);
@@ -87,7 +85,8 @@ if (isset($_POST['submit'])) {
         $pdo->prepare("DELETE FROM monetary_details WHERE donation_id = ?")->execute([$donation_id]);
         $stmt = $pdo->prepare("INSERT INTO monetary_details (donation_id, amount, payment_method, check_number, designation, recurring) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->execute([$donation_id, $amount, $payment_method, $check_number, $designation, $recurring]);
-        $pdo->prepare("UPDATE donations SET total_value = ? WHERE donation_id = ?")->execute([$amount, $donation_id]);
+        // Remove total_value update if not in schema
+        // $pdo->prepare("UPDATE donations SET total_value = ? WHERE donation_id = ?")->execute([$amount, $donation_id]);
     }
     $_SESSION['success'] = 'Donation updated successfully';
     header("Location: index.php");
@@ -144,6 +143,10 @@ if (isset($_POST['submit'])) {
                                 <!-- Items will be dynamically added here -->
                             </div>
                             <button type="button" class="btn btn-outline-secondary mb-3" onclick="addItemRow()">Add Another Item</button>
+                            <div class="mb-3 mt-3">
+                                <label for="description_goods" class="form-label">Description</label>
+                                <textarea class="form-control" id="description_goods" name="description" rows="2" placeholder="Describe the goods donation purpose or notes"><?php echo htmlspecialchars($donation['description']); ?></textarea>
+                            </div>
                         </div>
                         <div id="monetary_fields" style="display:none;">
                             <h5>Monetary Donation Details</h5>
@@ -170,6 +173,10 @@ if (isset($_POST['submit'])) {
                             <div class="mb-3">
                                 <label for="designation" class="form-label">Fund Designation</label>
                                 <input type="text" class="form-control" id="designation" name="designation" placeholder="e.g. Building Fund, General Operations">
+                            </div>
+                            <div class="mb-3">
+                                <label for="description_funds" class="form-label">Description</label>
+                                <textarea class="form-control" id="description_funds" name="description" rows="2" placeholder="Describe the donation purpose or notes"><?php echo htmlspecialchars($donation['description']); ?></textarea>
                             </div>
                             <div class="mb-3 form-check">
                                 <input type="checkbox" class="form-check-input" id="recurring" name="recurring">
