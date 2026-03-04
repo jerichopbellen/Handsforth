@@ -4,14 +4,20 @@ session_start();
 include("../../includes/header.php");
 include("../../includes/config.php");
 
+// Restrict access to admins only
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../../public/index.php");
     exit();
 }
 
 $user_id = intval($_GET['id']);
-$sql = "SELECT * FROM users WHERE user_id = $user_id";
-$result = mysqli_query($conn, $sql);
+
+// Fetch user with role_id
+$sql = "SELECT * FROM users WHERE user_id = ?";
+$stmt = mysqli_prepare($conn, $sql);
+mysqli_stmt_bind_param($stmt, 'i', $user_id);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
 
 if (!$result || mysqli_num_rows($result) === 0) {
     $_SESSION['error'] = "User not found.";
@@ -20,6 +26,16 @@ if (!$result || mysqli_num_rows($result) === 0) {
 }
 
 $user = mysqli_fetch_assoc($result);
+
+// Fetch roles for dropdown
+$roles = [];
+$role_sql = "SELECT role_id, role_name FROM roles ORDER BY role_name ASC";
+$role_result = mysqli_query($conn, $role_sql);
+if ($role_result && mysqli_num_rows($role_result) > 0) {
+    while ($row = mysqli_fetch_assoc($role_result)) {
+        $roles[] = $row;
+    }
+}
 ?>
 
 <div class="container mt-4">
@@ -56,10 +72,15 @@ $user = mysqli_fetch_assoc($result);
                         <input type="hidden" name="user_id" value="<?= $user['user_id']; ?>">
 
                         <div class="col-md-6 mb-3">
-                            <label for="role" class="form-label">Role</label>
-                            <select name="role" id="role" class="form-select" required>
-                                <option value="admin" <?= $user['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
-                                <option value="volunteer" <?= $user['role'] === 'volunteer' ? 'selected' : ''; ?>>Volunteer</option>
+                            <label for="role_id" class="form-label">Role</label>
+                            <select name="role_id" id="role_id" class="form-select" required>
+                                <option value="">-- Select Role --</option>
+                                <?php foreach ($roles as $role): ?>
+                                    <option value="<?= htmlspecialchars($role['role_id']); ?>"
+                                        <?= ($user['role_id'] == $role['role_id']) ? 'selected' : ''; ?>>
+                                        <?= htmlspecialchars($role['role_name']); ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
 

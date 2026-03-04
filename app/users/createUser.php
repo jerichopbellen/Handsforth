@@ -9,6 +9,16 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../../public/index.php");
     exit();
 }
+
+// Fetch roles from roles table
+$roles = [];
+$sql = "SELECT role_id, role_name FROM roles ORDER BY role_name ASC";
+$result = mysqli_query($conn, $sql);
+if ($result && mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_assoc($result)) {
+        $roles[] = $row;
+    }
+}
 ?>
 
 <div class="container mt-4">
@@ -36,11 +46,14 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                 <div class="col-md-8">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="role" class="form-label">Role</label>
-                            <select name="role" id="role" class="form-select" required>
-                                <option value="admin">Admin</option>
-                                <option value="volunteer">Volunteer</option>
-                                <option value="user">User</option>
+                            <label for="role_id" class="form-label">Role</label>
+                            <select name="role_id" id="role_id" class="form-select" required>
+                                <option value="">-- Select Role --</option>
+                                <?php foreach ($roles as $role): ?>
+                                    <option value="<?= htmlspecialchars($role['role_id']); ?>">
+                                        <?= htmlspecialchars($role['role_name']); ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
 

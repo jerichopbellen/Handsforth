@@ -10,10 +10,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     exit();
 }
 
+// Join users with roles to get role name
 $sql = "
-    SELECT user_id, role, username, first_name, last_name, email, phone, created_at, updated_at
-    FROM users
-    ORDER BY created_at DESC
+    SELECT u.user_id, r.role_name, u.username, u.first_name, u.last_name,
+           u.email, u.phone, u.created_at, u.updated_at
+    FROM users u
+    INNER JOIN roles r ON u.role_id = r.role_id
+    ORDER BY u.created_at DESC
 ";
 $result = mysqli_query($conn, $sql);
 ?>
@@ -45,10 +48,10 @@ $result = mysqli_query($conn, $sql);
                         <td><?= htmlspecialchars($user['user_id']); ?></td>
                         <td>
                             <span class="badge bg-<?= 
-                                ($user['role'] === 'admin') ? 'primary' : 
-                                (($user['role'] === 'volunteer') ? 'info' : 'secondary'); 
+                                ($user['role_name'] === 'admin') ? 'primary' : 
+                                (($user['role_name'] === 'volunteer') ? 'info' : 'secondary'); 
                             ?>">
-                                <?= htmlspecialchars($user['role']); ?>
+                                <?= htmlspecialchars($user['role_name']); ?>
                             </span>
                         </td>
                         <td><?= htmlspecialchars($user['username']); ?></td>
@@ -72,7 +75,7 @@ $result = mysqli_query($conn, $sql);
                 <?php endwhile; ?>
             <?php else: ?>
                 <tr>
-                    <td colspan="11" class="text-center">No users found.</td>
+                    <td colspan="9" class="text-center">No users found.</td>
                 </tr>
             <?php endif; ?>
         </tbody>
