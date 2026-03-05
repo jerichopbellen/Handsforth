@@ -50,7 +50,7 @@ include("config.php");
               <li><a class="dropdown-item" href="http://<?= $_SERVER['SERVER_NAME'] ?>/handsforth/app/projects/index.php">Projects</a></li>
               <li><a class="dropdown-item" href="http://<?= $_SERVER['SERVER_NAME'] ?>/handsforth/app/reports/index.php">Reports</a></li>
               <li><a class="dropdown-item" href="http://<?= $_SERVER['SERVER_NAME'] ?>/handsforth/app/users/listUsers.php">Users</a></li>
-              <li><a class="dropdown-item" href="http://<?= $_SERVER['SERVER_NAME'] ?>/handsforth/app/volunteers/index.php">Volunteers</a></li>
+              <li><a class="dropdown-item" href="http://<?= $_SERVER['SERVER_NAME'] ?>/handsforth/app/volunteers/index.php">Volunteer Assignment</a></li>
             </ul>
           </li>
         <?php endif; ?>
