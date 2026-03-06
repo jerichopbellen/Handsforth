@@ -38,76 +38,88 @@ $communityResult = $conn->query(
 );
 ?>
 
-<div class="container mt-4">
-    <h2>Beneficiaries</h2>
+<div class="container my-5">
+    <?php include("../../includes/alert.php"); ?>
 
-    <a href="addBeneficiaries.php" class="btn btn-primary mb-3">Add Beneficiary</a>
-
-    <form method="GET" class="row mb-3">
-
-        <div class="col-md-4">
-            <input type="text"
-                   name="search"
-                   class="form-control"
-                   placeholder="Search by name"
-                   value="<?= htmlspecialchars($search) ?>">
+    <div class="card shadow-sm border-0">
+        <div class="card-header text-white d-flex justify-content-between align-items-center" style="background-color:#2B547E;">
+            <h4 class="mb-0" style="color:#FFD700;">
+                <i class="bi bi-people-fill me-2"></i>Beneficiaries
+            </h4>
+            <a href="addBeneficiaries.php" class="btn fw-semibold" style="background-color:#FFD700; color:#2B547E;">
+                <i class="bi bi-plus-circle me-1"></i>Add Beneficiary
+            </a>
         </div>
+        <div class="card-body">
+            <form method="GET" class="row mb-4">
+                <div class="col-md-4 mb-2 mb-md-0">
+                    <input type="text"
+                           name="search"
+                           class="form-control"
+                           placeholder="Search by name"
+                           value="<?= htmlspecialchars($search) ?>">
+                </div>
 
-        <div class="col-md-4">
-            <select name="community" class="form-control">
-                <option value=""> All Communities </option>
-                <?php while ($c = $communityResult->fetch_assoc()) { ?>
-                    <option value="<?= htmlspecialchars($c['community_name']) ?>"
-                        <?= $community == $c['community_name'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($c['community_name']) ?>
-                    </option>
-                <?php } ?>
-            </select>
+                <div class="col-md-4 mb-2 mb-md-0">
+                    <select name="community" class="form-select">
+                        <option value=""> All Communities </option>
+                        <?php while ($c = $communityResult->fetch_assoc()) { ?>
+                            <option value="<?= htmlspecialchars($c['community_name']) ?>"
+                                <?= $community == $c['community_name'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($c['community_name']) ?>
+                            </option>
+                        <?php } ?>
+                    </select>
+                </div>
+
+                <div class="col-md-4 d-flex gap-2">
+                    <button class="btn fw-semibold" style="background-color:#2B547E; color:#FFD700;">Filter</button>
+                    <a href="index.php" class="btn fw-semibold" style="background-color:#FFD700; color:#2B547E;">Reset</a>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="fw-semibold">Name</th>
+                            <th class="fw-semibold">Contact Info</th>
+                            <th class="fw-semibold">Community</th>
+                            <th class="fw-semibold">Notes</th>
+                            <th class="fw-semibold" width="180">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if ($result->num_rows > 0) { ?>
+                            <?php while ($row = $result->fetch_assoc()) { ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($row['name']) ?></td>
+                                    <td><?= htmlspecialchars($row['contact_info']) ?></td>
+                                    <td><?= htmlspecialchars($row['community_name']) ?></td>
+                                    <td><?= htmlspecialchars($row['notes']) ?></td>
+                                    <td>
+                                        <a href="editBeneficiaries.php?id=<?= $row['beneficiary_id'] ?>"
+                                           class="btn btn-sm fw-semibold" style="background-color:#2B547E; color:#FFD700;">
+                                           <i class="bi bi-pencil-square"></i> Edit
+                                        </a>
+                                        <a href="deleteBeneficiaries.php?id=<?= $row['beneficiary_id'] ?>"
+                                           class="btn btn-sm fw-semibold" style="background-color:#FFD700; color:#2B547E;"
+                                           onclick="return confirm('Delete this beneficiary?')">
+                                           <i class="bi bi-trash"></i> Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php } ?>
+                        <?php } else { ?>
+                            <tr>
+                                <td colspan="5" class="text-center">No records found</td>
+                            </tr>
+                        <?php } ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
-
-        <div class="col-md-4">
-            <button class="btn btn-success">Filter</button>
-            <a href="index.php" class="btn btn-secondary">Reset</a>
-        </div>
-
-    </form>
-
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Contact Info</th>
-                <th>Community</th>
-                <th>Notes</th>
-                <th width="150">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if ($result->num_rows > 0) { ?>
-                <?php while ($row = $result->fetch_assoc()) { ?>
-                    <tr>
-                        <td><?= htmlspecialchars($row['name']) ?></td>
-                        <td><?= htmlspecialchars($row['contact_info']) ?></td>
-                        <td><?= htmlspecialchars($row['community_name']) ?></td>
-                        <td><?= htmlspecialchars($row['notes']) ?></td>
-                        <td>
-                            <a href="editBeneficiaries.php?id=<?= $row['beneficiary_id'] ?>"
-                               class="btn btn-warning btn-sm">Edit</a>
-                            <a href="deleteBeneficiaries.php?id=<?= $row['beneficiary_id'] ?>"
-                               class="btn btn-danger btn-sm"
-                               onclick="return confirm('Delete this beneficiary?')">
-                               Delete
-                            </a>
-                        </td>
-                    </tr>
-                <?php } ?>
-            <?php } else { ?>
-                <tr>
-                    <td colspan="5" class="text-center">No records found</td>
-                </tr>
-            <?php } ?>
-        </tbody>
-    </table>
+    </div>
 </div>
 
 <?php include("../../includes/footer.php"); ?>

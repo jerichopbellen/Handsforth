@@ -38,90 +38,100 @@ if ($role_result && mysqli_num_rows($role_result) > 0) {
 }
 ?>
 
-<div class="container mt-4">
+<div class="container my-5">
     <?php include("../../includes/alert.php"); ?>
 
-    <div class="card shadow-lg">
-        <div class="card-header bg-dark text-white">
-            <h4 class="mb-0">Edit User Profile</h4>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <!-- Profile Picture Column -->
-                <div class="col-md-4 text-center border-end">
-                    <img id="preview" 
-                         src="<?= !empty($user['img_path']) ? '../' . htmlspecialchars($user['img_path']) : '../../assets/default-avatar.png'; ?>" 
-                         alt="Profile Picture" 
-                         class="img-thumbnail mb-3 rounded-circle" 
-                         style="max-width:200px; width: 200px; height: 200px; object-fit: cover;">
-
-                    <form action="updateUserPhoto.php" method="POST" enctype="multipart/form-data" class="mb-3">
-                        <input type="hidden" name="user_id" value="<?= $user['user_id']; ?>">
-                        <div class="mb-3">
-                            <input type="file" name="img_path" id="img_path" class="form-control" accept="image/*">
-                        </div>
-                        <button type="submit" name="action" value="update" class="btn btn-primary w-100 mb-2">Upload New</button>
-                        <button type="submit" name="action" value="remove" class="btn btn-danger w-100"
-                                onclick="return confirm('Remove this profile picture?');">Remove</button>
-                    </form>
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm border-0">
+                <div class="card-header text-white" style="background-color:#2B547E;">
+                    <h4 class="mb-0" style="color:#FFD700;">
+                        <i class="bi bi-pencil-square me-2"></i>Edit User Profile
+                    </h4>
                 </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Profile Picture Column -->
+                        <div class="col-md-4 text-center border-end">
+                            <img id="preview" 
+                                 src="<?= !empty($user['img_path']) ? '../' . htmlspecialchars($user['img_path']) : '../../assets/default-avatar.png'; ?>" 
+                                 alt="Profile Picture" 
+                                 class="img-thumbnail mb-3 rounded-circle" 
+                                 style="max-width:200px; width:200px; height:200px; object-fit:cover;">
 
-                <!-- User Details Column -->
-                <div class="col-md-8">
-                    <form action="updateUser.php" method="POST" class="row g-3">
-                        <input type="hidden" name="user_id" value="<?= $user['user_id']; ?>">
-
-                        <div class="col-md-6 mb-3">
-                            <label for="role_id" class="form-label">Role</label>
-                            <select name="role_id" id="role_id" class="form-select" required>
-                                <option value="">-- Select Role --</option>
-                                <?php foreach ($roles as $role): ?>
-                                    <option value="<?= htmlspecialchars($role['role_id']); ?>"
-                                        <?= ($user['role_id'] == $role['role_id']) ? 'selected' : ''; ?>>
-                                        <?= htmlspecialchars($role['role_name']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" name="username" id="username" class="form-control" 
-                                   value="<?= htmlspecialchars($user['username']); ?>" required>
+                            <form action="updateUserPhoto.php" method="POST" enctype="multipart/form-data" class="mb-3">
+                                <input type="hidden" name="user_id" value="<?= $user['user_id']; ?>">
+                                <div class="mb-3">
+                                    <input type="file" name="img_path" id="img_path" class="form-control" accept="image/*">
+                                </div>
+                                <button type="submit" name="action" value="update" class="btn fw-semibold mb-2" style="background-color:#2B547E; color:#FFD700;">Upload New</button>
+                                <button type="submit" name="action" value="remove" class="btn fw-semibold" style="background-color:#FFD700; color:#2B547E;"
+                                        onclick="return confirm('Remove this profile picture?');">Remove</button>
+                            </form>
                         </div>
 
-                        <div class="col-md-12 mb-3">
-                            <label for="password" class="form-label">Password (leave blank to keep current)</label>
-                            <input type="password" name="password" id="password" class="form-control">
-                        </div>
+                        <!-- User Details Column -->
+                        <div class="col-md-8">
+                            <form action="updateUser.php" method="POST" class="row g-3">
+                                <input type="hidden" name="user_id" value="<?= $user['user_id']; ?>">
 
-                        <div class="col-md-6 mb-3">
-                            <label for="first_name" class="form-label">First Name</label>
-                            <input type="text" name="first_name" id="first_name" class="form-control"
-                                   value="<?= htmlspecialchars($user['first_name']); ?>">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="last_name" class="form-label">Last Name</label>
-                            <input type="text" name="last_name" id="last_name" class="form-control"
-                                   value="<?= htmlspecialchars($user['last_name']); ?>">
-                        </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="role_id" class="form-label fw-semibold">Role <span class="text-danger">*</span></label>
+                                    <select name="role_id" id="role_id" class="form-select" required>
+                                        <option value="">-- Select Role --</option>
+                                        <?php foreach ($roles as $role): ?>
+                                            <option value="<?= htmlspecialchars($role['role_id']); ?>"
+                                                <?= ($user['role_id'] == $role['role_id']) ? 'selected' : ''; ?>>
+                                                <?= htmlspecialchars($role['role_name']); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
 
-                        <div class="col-md-6 mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" name="email" id="email" class="form-control"
-                                   value="<?= htmlspecialchars($user['email']); ?>">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="phone" class="form-label">Phone</label>
-                            <input type="text" name="phone" id="phone" class="form-control"
-                                   value="<?= htmlspecialchars($user['phone']); ?>">
-                        </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="username" class="form-label fw-semibold">Username <span class="text-danger">*</span></label>
+                                    <input type="text" name="username" id="username" class="form-control" 
+                                           value="<?= htmlspecialchars($user['username']); ?>" required>
+                                </div>
 
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-success">Update User</button>
-                            <a href="listUsers.php" class="btn btn-secondary">Back to List</a>
+                                <div class="col-md-12 mb-3">
+                                    <label for="password" class="form-label fw-semibold">Password (leave blank to keep current)</label>
+                                    <input type="password" name="password" id="password" class="form-control">
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="first_name" class="form-label fw-semibold">First Name</label>
+                                    <input type="text" name="first_name" id="first_name" class="form-control"
+                                           value="<?= htmlspecialchars($user['first_name']); ?>">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="last_name" class="form-label fw-semibold">Last Name</label>
+                                    <input type="text" name="last_name" id="last_name" class="form-control"
+                                           value="<?= htmlspecialchars($user['last_name']); ?>">
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label fw-semibold">Email</label>
+                                    <input type="email" name="email" id="email" class="form-control"
+                                           value="<?= htmlspecialchars($user['email']); ?>">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="phone" class="form-label fw-semibold">Phone</label>
+                                    <input type="text" name="phone" id="phone" class="form-control"
+                                           value="<?= htmlspecialchars($user['phone']); ?>">
+                                </div>
+
+                                <div class="d-flex gap-2 mt-4">
+                                    <button type="submit" class="btn fw-semibold" style="background-color:#2B547E; color:#FFD700;">
+                                        <i class="bi bi-check-circle me-1"></i>Update User
+                                    </button>
+                                    <a href="listUsers.php" class="btn fw-semibold" style="background-color:#FFD700; color:#2B547E;">
+                                        <i class="bi bi-arrow-left me-1"></i>Back to List
+                                    </a>
+                                </div>
+                            </form>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>

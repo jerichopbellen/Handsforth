@@ -15,7 +15,9 @@ $sql = "SELECT a.attendance_id,
                a.check_in_time, a.check_out_time, a.status
         FROM attendance a
         JOIN users u ON a.volunteer_id = u.user_id
+        JOIN roles r ON u.role_id = r.role_id
         JOIN projects p ON a.project_id = p.project_id
+        WHERE r.role_name = 'volunteer'
         ORDER BY a.check_in_time DESC";
 
 $result = mysqli_query($conn, $sql);
@@ -27,13 +29,15 @@ if (!$result) {
 <div class="container my-5">
     <?php include("../../includes/alert.php"); ?>
 
-    <div class="card shadow-sm"> 
-        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center"> 
-            <h4 class="mb-0"><i class="bi bi-people me-2"></i>Attendance Records</h4> 
-            <a href="addAttendance.php" class="btn btn-light btn-sm text-dark"> 
-                <i class="bi bi-plus-circle me-1"></i>Add Attendance 
-            </a> 
-        </div> 
+    <div class="card shadow-sm border-0">  
+        <div class="card-header text-white d-flex justify-content-between align-items-center" style="background-color:#2B547E;">
+            <h4 class="mb-0" style="color:#FFD700;">
+                <i class="bi bi-people me-2"></i>Attendance Records
+            </h4>
+            <a href="addAttendance.php" class="btn fw-semibold btn-sm" style="background-color:#FFD700; color:#2B547E;">
+                <i class="bi bi-plus-circle me-1"></i>Add Attendance
+            </a>
+        </div>  
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-bordered table-hover align-middle">
@@ -69,12 +73,12 @@ if (!$result) {
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="editAttendance.php?id=<?php echo $row['attendance_id']; ?>" 
-                                           class="btn btn-sm btn-warning">
+                                        <a href="editAttendance.php?id=<?php echo $row['attendance_id']; ?>"  
+                                           class="btn btn-sm fw-semibold" style="background-color:#2B547E; color:#FFD700;">
                                            <i class="bi bi-pencil-square"></i> Edit
                                         </a>
-                                        <a href="deleteAttendance.php?id=<?php echo $row['attendance_id']; ?>" 
-                                           class="btn btn-sm btn-danger" 
+                                        <a href="deleteAttendance.php?id=<?php echo $row['attendance_id']; ?>"  
+                                           class="btn btn-sm fw-semibold" style="background-color:#FFD700; color:#2B547E;"
                                            onclick="return confirm('Are you sure you want to delete this record?');">
                                            <i class="bi bi-trash"></i> Delete
                                         </a>

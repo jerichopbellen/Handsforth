@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 include("../../includes/header.php");
 include("../../includes/config.php");
 
@@ -10,11 +9,11 @@ $result = mysqli_query($conn, "SELECT * FROM projects INNER JOIN users ON projec
 $project = mysqli_fetch_assoc($result);
 
 if (isset($_POST['update'])) {
-    $title = $_POST['title'];
+    $title       = $_POST['title'];
     $description = $_POST['description'];
-    $date = $_POST['date'];
-    $location = $_POST['location'];
-    $status = $_POST['status'];
+    $date        = $_POST['date'];
+    $location    = $_POST['location'];
+    $status      = $_POST['status'];
 
     mysqli_query($conn, "UPDATE projects SET
         title='$title',
@@ -29,66 +28,84 @@ if (isset($_POST['update'])) {
 }
 ?>
 
-<div class="container mt-5">
-    <div class="card shadow-lg border-0">
-        <div class="card-header bg-primary text-white">
-            <h3 class="mb-0">Edit Project</h3>
-        </div>
-        <div class="card-body">
-            <form method="POST">
-                <div class="mb-3">
-                    <label for="title" class="form-label fw-bold">Title</label>
-                    <input type="text" name="title" class="form-control form-control-lg" value="<?= htmlspecialchars($project['title']); ?>" required>
-                </div>
+<div class="container my-5">
+    <?php include("../../includes/alert.php"); ?>
 
-                <div class="mb-3">
-                    <label for="description" class="form-label fw-bold">Description</label>
-                    <textarea name="description" class="form-control form-control-lg" rows="4" required><?= htmlspecialchars($project['description']); ?></textarea>
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm border-0">
+                <div class="card-header text-white" style="background-color:#2B547E;">
+                    <h4 class="mb-0" style="color:#FFD700;">
+                        <i class="bi bi-pencil-square me-2"></i>Edit Project
+                    </h4>
                 </div>
+                <div class="card-body">
+                    <form method="POST">
 
-                <div class="row g-3">
-                    <div class="col-md-6">
                         <div class="mb-3">
-                            <label for="date" class="form-label fw-bold">Date</label>
-                            <input type="date" name="date" class="form-control" value="<?= htmlspecialchars($project['date']); ?>" required>
+                            <label for="title" class="form-label fw-semibold">Title <span class="text-danger">*</span></label>
+                            <input type="text" id="title" name="title" class="form-control"
+                                   value="<?= htmlspecialchars($project['title']); ?>" required>
                         </div>
-                    </div>
 
-                    <div class="col-md-6">
                         <div class="mb-3">
-                            <label for="location" class="form-label fw-bold">Location</label>
-                            <input type="text" name="location" class="form-control" value="<?= htmlspecialchars($project['location']); ?>" required>
+                            <label for="description" class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
+                            <textarea id="description" name="description" class="form-control" rows="4" required><?= htmlspecialchars($project['description']); ?></textarea>
                         </div>
-                    </div>
-                </div>
 
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="status" class="form-label fw-bold">Status</label>
-                            <select name="status" class="form-select" required>
-                                <option value="Ongoing" <?= $project['status']=='Ongoing'?'selected':'' ?>>Ongoing</option>
-                                <option value="Completed" <?= $project['status']=='Completed'?'selected':'' ?>>Completed</option>
-                                <option value="Pending" <?= $project['status']=='Pending'?'selected':'' ?>>Pending</option>
-                            </select>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="date" class="form-label fw-semibold">Date <span class="text-danger">*</span></label>
+                                    <input type="date" id="date" name="date" class="form-control"
+                                           value="<?= htmlspecialchars($project['date']); ?>" required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="location" class="form-label fw-semibold">Location <span class="text-danger">*</span></label>
+                                    <input type="text" id="location" name="location" class="form-control"
+                                           value="<?= htmlspecialchars($project['location']); ?>" required>
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="created_by" class="form-label fw-bold">Created By</label>
-                            <input type="text" name="created_by" class="form-control" value="<?= htmlspecialchars($project['username']); ?>" readonly>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
+                                    <select id="status" name="status" class="form-select" required>
+                                        <option value="Ongoing" <?= $project['status']=='Ongoing'?'selected':'' ?>>Ongoing</option>
+                                        <option value="Completed" <?= $project['status']=='Completed'?'selected':'' ?>>Completed</option>
+                                        <option value="Pending" <?= $project['status']=='Pending'?'selected':'' ?>>Pending</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="created_by" class="form-label fw-semibold">Created By</label>
+                                    <input type="text" id="created_by" name="created_by" class="form-control"
+                                           value="<?= htmlspecialchars($project['username']); ?>" readonly>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                <div class="mt-4 d-flex gap-2">
-                    <button name="update" class="btn btn-success px-4">Update</button>
-                    <a href="index.php" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <div class="d-flex gap-2 mt-4">
+                            <button name="update" class="btn fw-semibold" style="background-color:#2B547E; color:#FFD700;">
+                                <i class="bi bi-check-circle me-1"></i>Update
+                            </button>
+                            <a href="index.php" class="btn fw-semibold" style="background-color:#FFD700; color:#2B547E;">
+                                <i class="bi bi-arrow-left me-1"></i>Cancel
+                            </a>
+                        </div>
+
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
 
-<?php include("../../includes/footer.php"); ?>S
+<?php include("../../includes/footer.php"); ?>

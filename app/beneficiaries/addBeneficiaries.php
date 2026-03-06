@@ -10,7 +10,6 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 if (isset($_POST['save'])) {
-
     $name           = $_POST['name'];
     $contact_info   = $_POST['contact_info'];
     $community_name = $_POST['community_name'];
@@ -20,13 +19,7 @@ if (isset($_POST['save'])) {
         "INSERT INTO beneficiaries (name, contact_info, community_name, notes)
          VALUES (?, ?, ?, ?)"
     );
-    $stmt->bind_param(
-        "ssss",
-        $name,
-        $contact_info,
-        $community_name,
-        $notes
-    );
+    $stmt->bind_param("ssss", $name, $contact_info, $community_name, $notes);
     $stmt->execute();
     $stmt->close();
 
@@ -35,37 +28,54 @@ if (isset($_POST['save'])) {
 }
 ?>
 
-<div class="container mt-4">
-    <h2>Add Beneficiary</h2>
+<div class="container my-5">
+    <?php include("../../includes/alert.php"); ?>
 
-    <form method="POST">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header text-white" style="background-color:#2B547E;">
+                    <h4 class="mb-0" style="color:#FFD700;">
+                        <i class="bi bi-person-plus-fill me-2"></i>Add Beneficiary
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
 
-        <input type="text"
-               name="name"
-               class="form-control mb-2"
-               placeholder="Beneficiary Name"
-               required>
+                        <div class="mb-3">
+                            <label for="name" class="form-label fw-semibold">Beneficiary Name <span class="text-danger">*</span></label>
+                            <input type="text" id="name" name="name" class="form-control" required>
+                        </div>
 
-        <input type="text"
-               name="contact_info"
-               class="form-control mb-2"
-               placeholder="Contact Information"
-               required>
+                        <div class="mb-3">
+                            <label for="contact_info" class="form-label fw-semibold">Contact Information <span class="text-danger">*</span></label>
+                            <input type="text" id="contact_info" name="contact_info" class="form-control" required>
+                        </div>
 
-        <input type="text"
-               name="community_name"
-               class="form-control mb-2"
-               placeholder="Community Name"
-               required>
+                        <div class="mb-3">
+                            <label for="community_name" class="form-label fw-semibold">Community Name <span class="text-danger">*</span></label>
+                            <input type="text" id="community_name" name="community_name" class="form-control" required>
+                        </div>
 
-        <textarea name="notes"
-                  class="form-control mb-3"
-                  placeholder="Notes (optional)"></textarea>
+                        <div class="mb-3">
+                            <label for="notes" class="form-label fw-semibold">Notes</label>
+                            <textarea id="notes" name="notes" class="form-control" placeholder="Optional"></textarea>
+                        </div>
 
-        <button name="save" class="btn btn-success">Save</button>
-        <a href="index.php" class="btn btn-secondary">Cancel</a>
+                        <div class="d-flex gap-2">
+                            <button name="save" class="btn fw-semibold" style="background-color:#2B547E; color:#FFD700;">
+                                <i class="bi bi-check-circle me-1"></i>Save
+                            </button>
+                            <a href="index.php" class="btn fw-semibold" style="background-color:#FFD700; color:#2B547E;">
+                                <i class="bi bi-arrow-left me-1"></i>Cancel
+                            </a>
+                        </div>
 
-    </form>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <?php include("../../includes/footer.php"); ?>

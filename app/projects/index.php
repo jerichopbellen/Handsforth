@@ -34,57 +34,57 @@ $sql .= " ORDER BY date DESC";
 $result = mysqli_query($conn, $sql);
 ?>
 
-<div class="container mt-4">
-
+<div class="container my-5">
     <?php include("../../includes/alert.php"); ?>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">Project Management</h2>
-        <a href="create.php" class="btn btn-success px-4">+ Add Project</a>
-    </div>
-
-    <!-- Search & Filter -->
-    <div class="card shadow-sm mb-4">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header text-white d-flex justify-content-between align-items-center" style="background-color:#2B547E;">
+            <h4 class="mb-0" style="color:#FFD700;">
+                <i class="bi bi-kanban-fill me-2"></i>Project Management
+            </h4>
+            <a href="create.php" class="btn fw-semibold" style="background-color:#FFD700; color:#2B547E;">
+                <i class="bi bi-plus-circle me-1"></i>Add Project
+            </a>
+        </div>
         <div class="card-body">
-            <form method="GET">
-                <div class="row g-3 align-items-center">
-                    <div class="col-md-5">
-                        <input type="text"
-                               name="search"
-                               class="form-control"
-                               placeholder="🔍 Search projects..."
-                               value="<?= htmlspecialchars($search); ?>">
-                    </div>
-                    <div class="col-md-4">
-                        <select name="status" class="form-select">
-                            <option value="">All Status</option>
-                            <option value="Pending" <?= ($status == 'Pending') ? 'selected' : ''; ?>>Pending</option>
-                            <option value="Ongoing" <?= ($status == 'Ongoing') ? 'selected' : ''; ?>>Ongoing</option>
-                            <option value="Completed" <?= ($status == 'Completed') ? 'selected' : ''; ?>>Completed</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3 text-end">
-                        <button type="submit" class="btn btn-primary w-50">Apply</button>
-                        <a href="index.php" class="btn btn-outline-secondary w-45">Reset</a>
-                    </div>
+            <!-- Search & Filter -->
+            <form method="GET" class="row g-3 mb-3">
+                <div class="col-md-5">
+                    <input type="text"
+                           name="search"
+                           class="form-control"
+                           placeholder="Search projects..."
+                           value="<?= htmlspecialchars($search); ?>">
+                </div>
+                <div class="col-md-4">
+                    <select name="status" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="Pending" <?= ($status == 'Pending') ? 'selected' : ''; ?>>Pending</option>
+                        <option value="Ongoing" <?= ($status == 'Ongoing') ? 'selected' : ''; ?>>Ongoing</option>
+                        <option value="Completed" <?= ($status == 'Completed') ? 'selected' : ''; ?>>Completed</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2 justify-content-end">
+                    <button type="submit" class="btn fw-semibold" style="background-color:#2B547E; color:#FFD700;">Apply</button>
+                    <a href="index.php" class="btn fw-semibold" style="background-color:#FFD700; color:#2B547E;">Reset</a>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Projects Table -->
-    <div class="card shadow-sm">
+    <div class="card shadow-sm border-0">
         <div class="card-body p-0">
             <table class="table table-hover table-bordered mb-0">
-                <thead class="table-dark">
+                <thead class="table-light">
                     <tr>
-                        <th>ID</th>
-                        <th>Title</th>
-                        <th>Date</th>
-                        <th>Location</th>
-                        <th>Status</th>
-                        <th>Created By</th>
-                        <th width="180">Actions</th>
+                        <th class="fw-semibold">ID</th>
+                        <th class="fw-semibold">Title</th>
+                        <th class="fw-semibold">Date</th>
+                        <th class="fw-semibold">Location</th>
+                        <th class="fw-semibold">Status</th>
+                        <th class="fw-semibold">Created By</th>
+                        <th class="fw-semibold" width="180">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -93,22 +93,30 @@ $result = mysqli_query($conn, $sql);
                             <tr>
                                 <td><?= $row['project_id']; ?></td>
                                 <td><?= htmlspecialchars($row['title']); ?></td>
-                                <td><?= $row['date']; ?></td>
+                                <td><?= htmlspecialchars($row['date']); ?></td>
                                 <td><?= htmlspecialchars($row['location']); ?></td>
                                 <td>
-                                    <span class="badge bg-<?= 
-                                        ($row['status'] === 'Completed') ? 'success' : 
-                                        (($row['status'] === 'Ongoing') ? 'warning text-dark' : 'secondary'); 
-                                    ?>">
+                                    <span class="badge 
+                                        <?php 
+                                            if ($row['status'] === 'Completed') echo 'bg-success';
+                                            elseif ($row['status'] === 'Ongoing') echo 'bg-warning text-dark';
+                                            elseif ($row['status'] === 'Pending') echo 'bg-secondary';
+                                        ?>">
                                         <?= htmlspecialchars($row['status']); ?>
                                     </span>
                                 </td>
                                 <td><?= htmlspecialchars($row['username']); ?></td>
                                 <td>
                                     <div class="d-flex gap-2">
-                                        <a href="edit.php?id=<?= $row['project_id']; ?>" class="btn btn-sm btn-primary">Edit</a>
-                                        <a href="view.php?id=<?= $row['project_id']; ?>" class="btn btn-sm btn-info text-white">View</a>
-                                        <a href="delete.php?id=<?= $row['project_id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this project?');">Delete</a>
+                                        <a href="edit.php?id=<?= $row['project_id']; ?>" class="btn btn-sm fw-semibold" style="background-color:#2B547E; color:#FFD700;">
+                                            <i class="bi bi-pencil-square"></i> Edit
+                                        </a>
+                                        <a href="view.php?id=<?= $row['project_id']; ?>" class="btn btn-sm fw-semibold" style="background-color:#FFD700; color:#2B547E;">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                        <a href="delete.php?id=<?= $row['project_id']; ?>" class="btn btn-sm fw-semibold" style="background-color:#dc3545; color:#fff;" onclick="return confirm('Delete this project?');">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -122,7 +130,6 @@ $result = mysqli_query($conn, $sql);
             </table>
         </div>
     </div>
-
 </div>
 
 <?php include("../../includes/footer.php"); ?>
