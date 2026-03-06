@@ -3,6 +3,7 @@ session_start();
 include("../../includes/header.php");
 include("../../includes/config.php");
 
+// ✅ Session role check using roles table
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../../public/index.php");
     exit();
@@ -30,10 +31,13 @@ if (!$attendance) {
     exit();
 }
 
-// Fetch volunteers from users table
+// ✅ Fetch volunteers via roles table
 $volunteers = [];
-$vsql = "SELECT user_id, CONCAT(first_name, ' ', last_name) AS name 
-         FROM users WHERE role = 'volunteer' ORDER BY first_name ASC, last_name ASC";
+$vsql = "SELECT u.user_id, CONCAT(u.first_name, ' ', u.last_name) AS name
+         FROM users u
+         JOIN roles r ON u.role_id = r.role_id
+         WHERE r.role_name = 'volunteer'
+         ORDER BY u.first_name ASC, u.last_name ASC";
 $vresult = mysqli_query($conn, $vsql);
 if ($vresult) {
     while ($row = mysqli_fetch_assoc($vresult)) {
@@ -53,11 +57,11 @@ if ($presult) {
 
 // Handle form submission
 if (isset($_POST['submit'])) {
-    $volunteer_id  = trim($_POST['volunteer_id'] ?? '');
-    $project_id    = trim($_POST['project_id'] ?? '');
-    $status        = trim($_POST['status'] ?? '');
-    $check_in_time = trim($_POST['check_in_time'] ?? '');
-    $check_out_time= trim($_POST['check_out_time'] ?? '');
+    $volunteer_id   = trim($_POST['volunteer_id'] ?? '');
+    $project_id     = trim($_POST['project_id'] ?? '');
+    $status         = trim($_POST['status'] ?? '');
+    $check_in_time  = trim($_POST['check_in_time'] ?? '');
+    $check_out_time = trim($_POST['check_out_time'] ?? '');
 
     if (empty($volunteer_id) || empty($project_id) || empty($status) || empty($check_in_time)) {
         $_SESSION['error'] = "Volunteer, Project, Status, and Check-in time are required.";

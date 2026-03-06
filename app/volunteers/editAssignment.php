@@ -34,16 +34,21 @@ if (!$assignment) {
     exit();
 }
 
+// Fetch volunteers (users with role_name = volunteer)
+$volunteers_sql = "SELECT u.user_id, CONCAT(u.first_name, ' ', u.last_name) AS name
+                   FROM users u
+                   INNER JOIN roles r ON u.role_id = r.role_id
+                   WHERE r.role_name = 'volunteer'
+                   ORDER BY u.first_name ASC";
+$volunteers = mysqli_query($conn, $volunteers_sql);
 
-$volunteers = mysqli_query($conn, "SELECT user_id, CONCAT(first_name, ' ', last_name) AS name FROM users WHERE role = 'volunteer' ORDER BY first_name ASC");
-
-
+// Fetch projects
 $projects = mysqli_query($conn, "SELECT project_id, title FROM projects ORDER BY title ASC");
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $volunteer_id = $_POST['volunteer_id'];
-    $project_id   = $_POST['project_id'];
+    $volunteer_id   = $_POST['volunteer_id'];
+    $project_id     = $_POST['project_id'];
     $role_in_project = $_POST['role_in_project'];
 
     $update_sql = "UPDATE project_volunteers 
@@ -62,9 +67,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 
 <div class="container my-5">
-    <div class="card shadow-sm">
-        <div class="card-header bg-dark text-white">
-            <h4><i class="bi bi-pencil-square me-2"></i>Edit Volunteer Assignment</h4>
+    <div class="card shadow-sm border-0">
+        <div class="card-header text-white" style="background-color:#2B547E;">
+            <h4 class="mb-0" style="color:#FFD700;">
+                <i class="bi bi-pencil-square me-2"></i>Edit Volunteer Assignment
+            </h4>
         </div>
         <div class="card-body">
             <?php if (!empty($error)): ?>
@@ -102,10 +109,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                            class="form-control" value="<?php echo htmlspecialchars($assignment['role_in_project']); ?>" required>
                 </div>
 
-                <button type="submit" class="btn btn-success">
+                <button type="submit" class="btn fw-semibold" style="background-color:#2B547E; color:#FFD700;">
                     <i class="bi bi-check-circle me-1"></i>Update Assignment
                 </button>
-                <a href="index.php" class="btn btn-secondary">Cancel</a>
+                <a href="index.php" class="btn fw-semibold" style="background-color:#FFD700; color:#2B547E;">
+                    Cancel
+                </a>
             </form>
         </div>
     </div>

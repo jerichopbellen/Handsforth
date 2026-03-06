@@ -65,7 +65,7 @@ if (!$result) {
                                     <td>
                                         <a href="editAssignment.php?id=<?php echo $row['assignment_id']; ?>" 
                                            class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Edit</a>
-                                        <a href="deleteAssignment.php?id=<?php echo $row['assignment_id']; ?>" 
+                                        <a href="deleteVolunteer.php?id=<?php echo $row['assignment_id']; ?>" 
                                            class="btn btn-sm btn-danger" 
                                            onclick="return confirm('Are you sure you want to remove this assignment?');">
                                            <i class="bi bi-trash"></i> Delete

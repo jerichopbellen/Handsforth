@@ -8,9 +8,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     exit();
 }
 
-// Fetch volunteers from users table
+// Fetch volunteers (users with role_name = volunteer)
 $volunteers = [];
-$vsql = "SELECT user_id, CONCAT(first_name, ' ', last_name) AS name FROM users WHERE role = 'volunteer' ORDER BY first_name ASC, last_name ASC";
+$vsql = "SELECT u.user_id, CONCAT(u.first_name, ' ', u.last_name) AS name
+         FROM users u
+         INNER JOIN roles r ON u.role_id = r.role_id
+         WHERE r.role_name = 'volunteer'
+         ORDER BY u.first_name ASC, u.last_name ASC";
 $vresult = mysqli_query($conn, $vsql);
 if ($vresult) {
     while ($row = mysqli_fetch_assoc($vresult)) {
@@ -73,9 +77,11 @@ if (isset($_POST['submit'])) {
 
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-dark text-white">
-                    <h4 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Create Attendance</h4>
+            <div class="card shadow-sm border-0">
+                <div class="card-header text-white" style="background-color:#2B547E;">
+                    <h4 class="mb-0" style="color:#FFD700;">
+                        <i class="bi bi-plus-circle me-2"></i>Create Attendance
+                    </h4>
                 </div>
                 <div class="card-body">
                     <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST">
@@ -129,10 +135,10 @@ if (isset($_POST['submit'])) {
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="submit" name="submit" class="btn btn-success">
+                            <button type="submit" name="submit" class="btn fw-semibold" style="background-color:#2B547E; color:#FFD700;">
                                 <i class="bi bi-check-circle me-1"></i>Save
                             </button>
-                            <a href="index.php" class="btn btn-secondary">
+                            <a href="index.php" class="btn fw-semibold" style="background-color:#FFD700; color:#2B547E;">
                                 <i class="bi bi-arrow-left me-1"></i>Cancel
                             </a>
                         </div>
