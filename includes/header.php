@@ -30,13 +30,13 @@ include("config.php");
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link active text-white" href="#">Home</a>
+          <a class="nav-link active text-white" href="http://<?= $_SERVER['SERVER_NAME'] ?>/handsforth/index.php">Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white" href="#">Contact</a>
+          <a class="nav-link text-white" href="http://<?= $_SERVER['SERVER_NAME'] ?>/handsforth/contact.php">Contact</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white" href="#">About</a>
+          <a class="nav-link text-white" href="http://<?= $_SERVER['SERVER_NAME'] ?>/handsforth/about.php">About</a>
         </li>
         <?php if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'admin'): ?>
           <li class="nav-item dropdown">
