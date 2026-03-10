@@ -44,13 +44,11 @@ include("config.php");
               Admin Panel
             </a>
             <ul class="dropdown-menu dropdown-menu-dark">
-              <li><a class="dropdown-item" href="http://<?= $_SERVER['SERVER_NAME'] ?>/handsforth/app/attendance/index.php">Attendance</a></li>
               <li><a class="dropdown-item" href="http://<?= $_SERVER['SERVER_NAME'] ?>/handsforth/app/beneficiaries/index.php">Beneficiaries</a></li>
               <li><a class="dropdown-item" href="http://<?= $_SERVER['SERVER_NAME'] ?>/handsforth/app/donations/index.php">Donations</a></li>
               <li><a class="dropdown-item" href="http://<?= $_SERVER['SERVER_NAME'] ?>/handsforth/app/projects/index.php">Projects</a></li>
               <li><a class="dropdown-item" href="http://<?= $_SERVER['SERVER_NAME'] ?>/handsforth/app/reports/index.php">Reports</a></li>
               <li><a class="dropdown-item" href="http://<?= $_SERVER['SERVER_NAME'] ?>/handsforth/app/users/listUsers.php">Users</a></li>
-              <li><a class="dropdown-item" href="http://<?= $_SERVER['SERVER_NAME'] ?>/handsforth/app/volunteers/index.php">Volunteer Assignment</a></li>
             </ul>
           </li>
         <?php endif; ?>
