@@ -33,14 +33,13 @@ if (!$project) {
 // 3. Fetch Assigned Volunteers & Attendance
 $v_stmt = $conn->prepare("
     SELECT pv.volunteer_id, pv.role_in_project, u.first_name, u.last_name, 
-           a.status AS att_status
+           a.status AS att_status, a.check_in_time, a.check_out_time
     FROM project_volunteers pv
     JOIN users u ON pv.volunteer_id = u.user_id
     LEFT JOIN (
-        SELECT volunteer_id, project_id, status
+        SELECT volunteer_id, project_id, status, check_in_time, check_out_time
         FROM attendance
         WHERE project_id = ?
-        GROUP BY volunteer_id
     ) a ON a.volunteer_id = pv.volunteer_id
     WHERE pv.project_id = ?
 ");
@@ -49,7 +48,7 @@ $v_stmt->execute();
 $volunteers = $v_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $v_stmt->close();
 
-// 4. Fetch Available Users
+// 4. Fetch Available Users (Users not yet in this project)
 $avail_stmt = $conn->prepare("
     SELECT user_id, first_name, last_name 
     FROM users 
@@ -61,6 +60,26 @@ $available_users = $avail_stmt->get_result();
 
 $statusClass = ($project['status'] === 'completed') ? 'success' : (($project['status'] === 'ongoing') ? 'warning text-dark' : 'secondary');
 ?>
+
+<style>
+    /* Prevent clipping and hide default browser clock icons to save space */
+    input[type="time"]::-webkit-calendar-picker-indicator {
+        background: none;
+        display: none;
+        -webkit-appearance: none;
+    }
+    .time-input-field {
+        padding-left: 5px !important;
+        padding-right: 2px !important;
+        min-width: 95px !important;
+    }
+    /* Visual indicator for disabled fields */
+    input:disabled {
+        background-color: #e9ecef !important;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+</style>
 
 <div class="container my-5">
     <?php if (isset($_GET['msg'])): ?>
@@ -85,7 +104,6 @@ $statusClass = ($project['status'] === 'completed') ? 'success' : (($project['st
     </div>
 
     <div class="row">
-        <!-- Core Information -->
         <div class="col-lg-4">
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header text-white" style="background-color:#2B547E;">
@@ -104,7 +122,6 @@ $statusClass = ($project['status'] === 'completed') ? 'success' : (($project['st
                 </div>
             </div>
 
-            <!-- Assign Volunteer -->
             <div class="card shadow-sm border-0">
                 <div class="card-header text-white" style="background-color:#2B547E;">
                     <h5 class="mb-0" style="color:#FFD700;">Assign Volunteer</h5>
@@ -135,7 +152,6 @@ $statusClass = ($project['status'] === 'completed') ? 'success' : (($project['st
             </div>
         </div>
 
-        <!-- Team Attendance -->
         <div class="col-lg-8">
             <div class="card shadow-sm border-0">
                 <div class="card-header d-flex justify-content-between align-items-center text-white" style="background-color:#2B547E;">
@@ -149,12 +165,14 @@ $statusClass = ($project['status'] === 'completed') ? 'success' : (($project['st
                                 <tr>
                                     <th>Volunteer</th>
                                     <th>Role</th>
-                                    <th>Attendance Status</th>
+                                    <th style="min-width: 440px;">Attendance Log (Status | In | Out)</th>
                                     <th class="text-end pe-3">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach($volunteers as $v): ?>
+                                <?php foreach($volunteers as $v): 
+                                    $isAbsent = ($v['att_status'] === 'absent');
+                                ?>
                                 <tr>
                                     <td><strong><?= htmlspecialchars($v['first_name'] . ' ' . $v['last_name']); ?></strong></td>
                                     <td>
@@ -162,39 +180,56 @@ $statusClass = ($project['status'] === 'completed') ? 'success' : (($project['st
                                             <input type="hidden" name="project_id" value="<?= $id; ?>">
                                             <input type="hidden" name="volunteer_id" value="<?= $v['volunteer_id']; ?>">
                                             <input type="text" name="role_in_project" class="form-control form-control-sm" 
-                                                   value="<?= htmlspecialchars($v['role_in_project']); ?>" style="max-width: 120px;">
-                                            <button type="submit" class="btn btn-sm fw-semibold" style="background-color:#FFD700; color:#2B547E;">
+                                                   value="<?= htmlspecialchars($v['role_in_project']); ?>" style="max-width: 90px;">
+                                            <button type="submit" class="btn btn-sm" style="background-color:#FFD700; color:#2B547E;">
                                                 <i class="bi bi-check"></i>
                                             </button>
                                         </form>
                                     </td>
                                     <td>
-                                        <form action="../attendance/update_attendance.php" method="POST" class="d-flex gap-1">
+                                        <form action="../attendance/update_attendance.php" method="POST" class="attendance-form">
                                             <input type="hidden" name="project_id" value="<?= $id; ?>">
                                             <input type="hidden" name="volunteer_id" value="<?= $v['volunteer_id']; ?>">
-                                            <select name="status" class="form-select form-select-sm" required>
-                                                <option value="" <?= is_null($v['att_status']) ? 'selected' : ''; ?> disabled>-- Set Status --</option>
-                                                <option value="present" <?= $v['att_status'] == 'present' ? 'selected' : ''; ?>>Present</option>
-                                                <option value="absent" <?= $v['att_status'] == 'absent' ? 'selected' : ''; ?>>Absent</option>
-                                                <option value="late" <?= $v['att_status'] == 'late' ? 'selected' : ''; ?>>Late</option>
-                                            </select>
-                                            <button type="submit" class="btn btn-sm fw-semibold" style="background-color:#2B547E; color:#FFD700;">
-                                                Save
-                                            </button>
+                                            
+                                            <div class="d-flex align-items-center gap-2">
+                                                <select name="status" class="form-select form-select-sm status-select" required style="width: 100px;">
+                                                    <option value="present" <?= $v['att_status'] == 'present' ? 'selected' : ''; ?>>Present</option>
+                                                    <option value="absent" <?= $v['att_status'] == 'absent' ? 'selected' : ''; ?>>Absent</option>
+                                                    <option value="late" <?= $v['att_status'] == 'late' ? 'selected' : ''; ?>>Late</option>
+                                                </select>
+
+                                                <div class="input-group input-group-sm" style="width: 145px;">
+                                                    <span class="input-group-text bg-light"><i class="bi bi-box-arrow-in-right text-success"></i></span>
+                                                    <input type="time" name="check_in_time" class="form-control time-input-field" 
+                                                           value="<?= $v['check_in_time'] ? date("H:i", strtotime($v['check_in_time'])) : ''; ?>" 
+                                                           <?= $isAbsent ? 'disabled' : '' ?>>
+                                                </div>
+
+                                                <div class="input-group input-group-sm" style="width: 145px;">
+                                                    <span class="input-group-text bg-light"><i class="bi bi-box-arrow-right text-danger"></i></span>
+                                                    <input type="time" name="check_out_time" class="form-control time-input-field" 
+                                                           value="<?= $v['check_out_time'] ? date("H:i", strtotime($v['check_out_time'])) : ''; ?>" 
+                                                           <?= $isAbsent ? 'disabled' : '' ?>>
+                                                </div>
+
+                                                <button type="submit" class="btn btn-sm fw-semibold text-white" style="background-color:#2B547E;">
+                                                    Save
+                                                </button>
+                                            </div>
                                         </form>
                                     </td>
                                     <td class="text-end pe-3">
                                         <a href="../volunteers/deleteVolunteer.php?project_id=<?= $id; ?>&volunteer_id=<?= $v['volunteer_id']; ?>" 
-                                           class="btn btn-sm fw-semibold" style="background-color:#dc3545; color:#fff;"
+                                           class="btn btn-sm btn-outline-danger" 
                                            onclick="return confirm('Remove volunteer?')">
-                                            <i class="bi bi-trash"></i> Remove
+                                            <i class="bi bi-trash"></i>
                                         </a>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
                                 <?php if (empty($volunteers)): ?>
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted">No volunteers assigned yet.</td>
+                                    <td colspan="4" class="text-center text-muted py-4">No volunteers assigned yet.</td>
                                 </tr>
                                 <?php endif; ?>
                             </tbody>
@@ -205,5 +240,30 @@ $statusClass = ($project['status'] === 'completed') ? 'success' : (($project['st
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const statusSelects = document.querySelectorAll('.status-select');
+
+    statusSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            // Find the closest table row to target the right inputs
+            const row = this.closest('tr');
+            const timeInputs = row.querySelectorAll('input[type="time"]');
+            
+            if (this.value === 'absent') {
+                timeInputs.forEach(input => {
+                    input.disabled = true;
+                    input.value = ""; // Clear values if absent
+                });
+            } else {
+                timeInputs.forEach(input => {
+                    input.disabled = false;
+                });
+            }
+        });
+    });
+});
+</script>
 
 <?php include("../../includes/footer.php"); ?>

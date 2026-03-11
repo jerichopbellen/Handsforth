@@ -76,13 +76,14 @@ if (isset($_POST['update'])) {
                                 <div class="mb-3">
                                     <label for="status" class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
                                     <select id="status" name="status" class="form-select" required>
+                                        <option value="Planned" <?= $project['status']=='Planned'?'selected':'' ?>>Planned</option>
                                         <option value="Ongoing" <?= $project['status']=='Ongoing'?'selected':'' ?>>Ongoing</option>
                                         <option value="Completed" <?= $project['status']=='Completed'?'selected':'' ?>>Completed</option>
-                                        <option value="Pending" <?= $project['status']=='Pending'?'selected':'' ?>>Pending</option>
+                                        <option value="Cancelled" <?= $project['status']=='Cancelled'?'selected':'' ?>>Cancelled</option>
+                                        
                                     </select>
                                 </div>
                             </div>
-
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="created_by" class="form-label fw-semibold">Created By</label>
@@ -96,7 +97,7 @@ if (isset($_POST['update'])) {
                             <button name="update" class="btn fw-semibold" style="background-color:#2B547E; color:#FFD700;">
                                 <i class="bi bi-check-circle me-1"></i>Update
                             </button>
-                            <a href="index.php" class="btn fw-semibold" style="background-color:#FFD700; color:#2B547E;">
+                            <a href="view.php?id=<?= $id ?>" class="btn fw-semibold" style="background-color:#FFD700; color:#2B547E;">
                                 <i class="bi bi-arrow-left me-1"></i>Cancel
                             </a>
                         </div>
