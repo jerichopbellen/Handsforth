@@ -26,7 +26,8 @@ if (!empty($search)) {
 
 if (!empty($status)) {
     $status = mysqli_real_escape_string($conn, $status);
-    $sql .= " AND status = '$status'";
+    // Use LOWER in SQL to ensure the filter matches even if cases differ
+    $sql .= " AND LOWER(status) = LOWER('$status')";
 }
 
 $sql .= " ORDER BY date DESC";
@@ -38,12 +39,11 @@ $totalProjects = mysqli_num_rows($result);
 <div class="container my-5">
     <?php include("../../includes/alert.php"); ?>
 
-    <!-- Header Section -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold text-dark">
                 <i class="bi bi-kanban-fill me-2"></i> Projects
-            </h2>
+            </h2>   
             <p class="text-muted">Manage and track all your projects</p>
         </div>
         <div>
@@ -53,7 +53,6 @@ $totalProjects = mysqli_num_rows($result);
         </div>
     </div>
 
-    <!-- Search & Filter Card -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
             <form method="GET" class="row g-3">
@@ -72,9 +71,9 @@ $totalProjects = mysqli_num_rows($result);
                     <label class="form-label fw-semibold text-muted">Status</label>
                     <select name="status" class="form-select bg-light border-0">
                         <option value="">All Statuses</option>
-                        <option value="Pending" <?= $status === 'Pending' ? 'selected' : ''; ?>>Pending</option>
-                        <option value="Ongoing" <?= $status === 'Ongoing' ? 'selected' : ''; ?>>Ongoing</option>
-                        <option value="Completed" <?= $status === 'Completed' ? 'selected' : ''; ?>>Completed</option>
+                        <option value="Pending" <?= strcasecmp($status, 'Pending') == 0 ? 'selected' : ''; ?>>Pending</option>
+                        <option value="Ongoing" <?= strcasecmp($status, 'Ongoing') == 0 ? 'selected' : ''; ?>>Ongoing</option>
+                        <option value="Completed" <?= strcasecmp($status, 'Completed') == 0 ? 'selected' : ''; ?>>Completed</option>
                     </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2 align-items-end">
@@ -89,12 +88,10 @@ $totalProjects = mysqli_num_rows($result);
         </div>
     </div>
 
-    <!-- Results Counter -->
     <div class="mb-3">
         <small class="text-muted">Found <strong><?= $totalProjects; ?></strong> project<?= $totalProjects !== 1 ? 's' : ''; ?></small>
     </div>
 
-    <!-- Projects Table -->
     <?php if ($result && $totalProjects > 0): ?>
         <div class="card shadow-sm border-0">
             <div class="table-responsive">
@@ -116,13 +113,15 @@ $totalProjects = mysqli_num_rows($result);
                                 <td><small class="text-muted"><?= date('M d, Y', strtotime($row['date'])); ?></small></td>
                                 <td><small><?= htmlspecialchars($row['location']); ?></small></td>
                                 <td>
-                                    <span class="badge 
-                                        <?php 
-                                            if ($row['status'] === 'Completed') echo 'bg-success';
-                                            elseif ($row['status'] === 'Ongoing') echo 'bg-warning text-dark';
-                                            elseif ($row['status'] === 'Pending') echo 'bg-secondary';
-                                        ?>">
-                                        <?= htmlspecialchars($row['status']); ?>
+                                    <?php 
+                                        $curr = strtolower($row['status']);
+                                        $badgeClass = 'bg-secondary'; // Default
+                                        if ($curr === 'completed') $badgeClass = 'bg-success';
+                                        elseif ($curr === 'ongoing') $badgeClass = 'bg-warning text-dark';
+                                        elseif ($curr === 'pending') $badgeClass = 'bg-secondary';
+                                    ?>
+                                    <span class="badge <?= $badgeClass; ?>">
+                                        <?= htmlspecialchars(ucfirst($row['status'])); ?>
                                     </span>
                                 </td>
                                 <td><small class="text-muted"><?= htmlspecialchars($row['username']); ?></small></td>
