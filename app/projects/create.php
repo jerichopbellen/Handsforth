@@ -92,9 +92,9 @@ if (isset($_POST['save'])) {
                                     <label for="status" class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
                                     <select id="status" name="status" class="form-select" required>
                                         <option value="" disabled <?= $statusSelected == '' ? 'selected' : '' ?>>Select Status</option>
+                                        <option value="Planned" <?= $statusSelected == 'Planned' ? 'selected' : '' ?>>Planned</option>
                                         <option value="Ongoing" <?= $statusSelected == 'Ongoing' ? 'selected' : '' ?>>Ongoing</option>
                                         <option value="Completed" <?= $statusSelected == 'Completed' ? 'selected' : '' ?>>Completed</option>
-                                        <option value="Pending" <?= $statusSelected == 'Pending' ? 'selected' : '' ?>>Pending</option>
                                     </select>
                                 </div>
                             </div>
