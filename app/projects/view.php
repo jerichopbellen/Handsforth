@@ -30,7 +30,7 @@ if (!$project) {
     exit;
 }
 
-// 3. Fetch Assigned Volunteers & Attendance
+// 3. Fetch Approved Team & Attendance
 $v_stmt = $conn->prepare("
     SELECT pv.volunteer_id, pv.role_in_project, u.first_name, u.last_name, 
            a.status AS att_status, a.check_in_time, a.check_out_time
@@ -48,18 +48,18 @@ $v_stmt->execute();
 $volunteers = $v_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $v_stmt->close();
 
-// 4. Fetch Available Users (Joined with volunteer_details for availability)
-// Based on your schema: role_id 3 is volunteer.
-$avail_stmt = $conn->prepare("
-    SELECT u.user_id, u.first_name, u.last_name, vd.availability 
-    FROM users u
+// 4. Fetch Pending Applications (Modified as requested)
+$app_stmt = $conn->prepare("
+    SELECT pa.application_id, u.user_id, u.first_name, u.last_name, vd.availability, pa.applied_at
+    FROM project_applications pa
+    JOIN users u ON pa.volunteer_id = u.user_id
     LEFT JOIN volunteer_details vd ON u.user_id = vd.volunteer_id
-    WHERE u.role_id = 3 
-    AND u.user_id NOT IN (SELECT volunteer_id FROM project_volunteers WHERE project_id = ?)
+    WHERE pa.project_id = ? AND pa.status = 'pending'
+    ORDER BY pa.applied_at ASC
 ");
-$avail_stmt->bind_param("i", $id);
-$avail_stmt->execute();
-$available_users = $avail_stmt->get_result();
+$app_stmt->bind_param("i", $id);
+$app_stmt->execute();
+$pending_applicants = $app_stmt->get_result();
 
 $statusClass = match(strtolower($project['status'])) {
     'completed' => 'success',
@@ -73,6 +73,7 @@ $statusClass = match(strtolower($project['status'])) {
     input[type="time"]::-webkit-calendar-picker-indicator { display: none; -webkit-appearance: none; }
     .time-input-field { padding-left: 5px !important; min-width: 95px !important; }
     input:disabled { background-color: #e9ecef !important; cursor: not-allowed; opacity: 0.6; }
+    .applicant-card:hover { background-color: #f8f9fa; }
 </style>
 
 <div class="container my-5">
@@ -114,43 +115,49 @@ $statusClass = match(strtolower($project['status'])) {
 
             <div class="card shadow-sm border-0">
                 <div class="card-header text-white" style="background-color:#2B547E;">
-                    <h5 class="mb-0" style="color:#FFD700;">Assign Volunteer</h5>
+                    <h5 class="mb-0" style="color:#FFD700;">Pending Applications</h5>
                 </div>
-                <div class="card-body">
-                    <form action="../volunteers/assignVolunteer.php" method="POST">
-                        <input type="hidden" name="project_id" value="<?= $id; ?>">
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Person</label>
-                            <select name="volunteer_id" class="form-select" required>
-                                <option value="">-- Select Available --</option>
-                                <?php while($user = $available_users->fetch_assoc()): ?>
-                                    <?php 
-                                        $availText = $user['availability'] ? ucfirst($user['availability']) : 'Not Set';
-                                        $icon = match($user['availability']) {
-                                            'anytime' => '🟢',
-                                            'weekends', 'weekdays' => '🟡',
-                                            default => '⚪',
-                                        };
-                                    ?>
-                                    <option value="<?= $user['user_id']; ?>">
-                                        <?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?> 
-                                        (<?= $icon . ' ' . $availText; ?>)
-                                    </option>
-                                <?php endwhile; ?>
-                            </select>
+                <div class="card-body p-0">
+                    <?php if ($pending_applicants->num_rows > 0): ?>
+                        <div class="list-group list-group-flush">
+                            <?php while($app = $pending_applicants->fetch_assoc()): 
+                                $availText = $app['availability'] ? ucfirst($app['availability']) : 'Not Set';
+                                $icon = match($app['availability']) {
+                                    'anytime' => '🟢',
+                                    'weekends', 'weekdays' => '🟡',
+                                    default => '⚪',
+                                };
+                            ?>
+                                <div class="list-group-item applicant-card p-3">
+                                    <div class="mb-2">
+                                        <h6 class="mb-0 fw-bold"><?= htmlspecialchars($app['first_name'] . ' ' . $app['last_name']); ?></h6>
+                                        <small class="text-muted"><?= $icon . ' ' . $availText; ?></small>
+                                    </div>
+                                    <form action="approve_application.php" method="POST">
+                                        <input type="hidden" name="application_id" value="<?= $app['application_id']; ?>">
+                                        <input type="hidden" name="project_id" value="<?= $id; ?>">
+                                        <input type="hidden" name="volunteer_id" value="<?= $app['user_id']; ?>">
+                                        
+                                        <div class="input-group input-group-sm">
+                                            <select name="role_in_project" class="form-select form-select-sm">
+                                                <option value="member">Member</option>
+                                                <option value="leader">Leader</option>
+                                                <option value="support">Support</option>
+                                            </select>
+                                            <button type="submit" class="btn fw-semibold" style="background-color:#FFD700; color:#2B547E;">
+                                                Approve
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            <?php endwhile; ?>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Role</label>
-                            <select name="role_in_project" class="form-select">
-                                <option value="member">Member</option>
-                                <option value="leader">Leader</option>
-                                <option value="support">Support</option>
-                            </select>
+                    <?php else: ?>
+                        <div class="p-4 text-center">
+                            <i class="bi bi-people text-muted" style="font-size: 1.5rem;"></i>
+                            <p class="text-muted small mb-0 mt-2">No pending applications for this project.</p>
                         </div>
-                        <button type="submit" class="btn fw-semibold w-100" style="background-color:#FFD700; color:#2B547E;">
-                            <i class="bi bi-person-plus-fill me-1"></i> Add to Project
-                        </button>
-                    </form>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// Fetch volunteer profile
+// 1. Fetch volunteer profile
 $profile_sql = "SELECT u.first_name, u.last_name, u.email, u.phone, u.img_path,
                        v.skills, v.availability
                 FROM users u
@@ -19,11 +19,22 @@ $profile_sql = "SELECT u.first_name, u.last_name, u.email, u.phone, u.img_path,
 $stmt = mysqli_prepare($conn, $profile_sql);
 mysqli_stmt_bind_param($stmt, 'i', $user_id);
 mysqli_stmt_execute($stmt);
-$profile_result = mysqli_stmt_get_result($stmt);
-$profile = mysqli_fetch_assoc($profile_result);
+$profile = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 mysqli_stmt_close($stmt);
 
-// Upcoming projects
+// 2. Fetch Available Opportunities (Planned projects user hasn't joined/applied for)
+$opp_sql = "SELECT p.* FROM projects p 
+            WHERE p.status = 'planned' 
+            AND p.project_id NOT IN (SELECT project_id FROM project_volunteers WHERE volunteer_id = ?)
+            AND p.project_id NOT IN (SELECT project_id FROM project_applications WHERE volunteer_id = ? AND status = 'pending')
+            ORDER BY p.date ASC";
+$stmt = mysqli_prepare($conn, $opp_sql);
+mysqli_stmt_bind_param($stmt, 'ii', $user_id, $user_id);
+mysqli_stmt_execute($stmt);
+$opp_result = mysqli_stmt_get_result($stmt);
+mysqli_stmt_close($stmt);
+
+// 3. Upcoming projects (ONLY those where user is APPROVED/JOINED)
 $upcoming_sql = "SELECT p.project_id, p.title, p.description, p.date, p.location, pv.role_in_project
                  FROM project_volunteers pv
                  JOIN projects p ON pv.project_id = p.project_id
@@ -35,7 +46,7 @@ mysqli_stmt_execute($stmt);
 $upcoming_result = mysqli_stmt_get_result($stmt);
 mysqli_stmt_close($stmt);
 
-// Completed projects
+// 4. Completed projects
 $completed_sql = "SELECT p.project_id, p.title, p.date, p.location, p.status,
                          a.status AS attendance_status, a.check_in_time, a.check_out_time,
                          pv.role_in_project
@@ -51,132 +62,136 @@ $completed_result = mysqli_stmt_get_result($stmt);
 mysqli_stmt_close($stmt);
 ?>
 
-<div class="container-fluid my-5 px-5" style="padding-top: 2rem; padding-bottom: 2rem;">
+<div class="container-fluid my-5 px-5">
     <?php include("../includes/alert.php"); ?>
 
-    <!-- Welcome Header -->
     <div class="row mb-5">
         <div class="col-12">
             <h1 class="display-5 fw-bold" style="color:#2B547E;">Welcome, <?php echo htmlspecialchars($profile['first_name']); ?>!</h1>
-            <p class="text-muted">Track your volunteer journey and upcoming opportunities</p>
+            <p class="text-muted">Track your volunteer journey and discover new opportunities.</p>
         </div>
     </div>
 
     <div class="row">
-        <!-- Profile Card -->
         <div class="col-lg-3 mb-4">
-            <div class="card border-0 h-100" style="box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);">
-                <div class="card-body p-4">
-                    <div class="text-center mb-3">
-                        <?php 
-                            $img_path = $profile['img_path'] ?? 'default-avatar.png';
-                            $img_src = !empty($profile['img_path']) ? htmlspecialchars($profile['img_path']) : '../assets/default-avatar.png';
-                        ?>
-                        <img src="<?php echo $img_src; ?>" alt="Profile Picture" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
-                    </div>
-                    <h5 class="card-title text-center" style="color:#2B547E;"><?php echo htmlspecialchars($profile['first_name'] . " " . $profile['last_name']); ?></h5>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4 text-center">
+                    <?php $img_src = !empty($profile['img_path']) ? htmlspecialchars($profile['img_path']) : '../assets/default-avatar.png'; ?>
+                    <img src="<?php echo $img_src; ?>" class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #f8f9fa;">
+                    <h5 style="color:#2B547E;"><?php echo htmlspecialchars($profile['first_name'] . " " . $profile['last_name']); ?></h5>
                     <hr>
-                    <small class="text-muted d-block mb-2"><strong>Email:</strong></small>
-                    <p class="text-break"><?php echo htmlspecialchars($profile['email']); ?></p>
-                    <small class="text-muted d-block mb-2"><strong>Phone:</strong></small>
-                    <p><?php echo htmlspecialchars($profile['phone'] ?? 'N/A'); ?></p>
-                    <small class="text-muted d-block mb-2"><strong>Skills:</strong></small>
-                    <p><?php echo htmlspecialchars($profile['skills'] ?? 'Not yet added'); ?></p>
-                    <a href="editProfile.php" class="btn w-100 mt-3 fw-semibold" style="background-color:#2B547E; color:#FFD700;">
-                        <i class="bi bi-pencil me-2"></i>Edit Profile
-                    </a>
+                    <div class="text-start small">
+                        <p class="mb-1 text-muted"><strong>Skills:</strong></p>
+                        <p><?php echo htmlspecialchars($profile['skills'] ?? 'Not yet added'); ?></p>
+                        <p class="mb-1 text-muted"><strong>Availability:</strong></p>
+                        <p><?php echo ucfirst($profile['availability'] ?? 'Not set'); ?></p>
+                    </div>
+                    <a href="editProfile.php" class="btn btn-sm w-100 mt-2 fw-semibold" style="background-color:#2B547E; color:#FFD700;">Edit Profile</a>
                 </div>
             </div>
         </div>
 
-        <!-- Main Content -->
         <div class="col-lg-9">
-            <!-- Upcoming Projects -->
-            <div class="card border-0 mb-4" style="box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);">
+            
+            <div class="card border-0 mb-4 shadow-sm">
+                <div class="card-header text-white d-flex justify-content-between align-items-center" style="background-color:#2B547E;">
+                    <h5 class="mb-0" style="color:#FFD700;"><i class="bi bi-search me-2"></i>Find Opportunities</h5>
+                    <span class="badge bg-light text-dark"><?php echo mysqli_num_rows($opp_result); ?> Available</span>
+                </div>
+                <div class="card-body p-4">
+                    <?php if (mysqli_num_rows($opp_result) > 0): ?>
+                        <div class="row g-3">
+                            <?php while ($row = mysqli_fetch_assoc($opp_result)): ?>
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 h-100 position-relative">
+                                        <h6 class="fw-bold" style="color:#2B547E;"><?php echo htmlspecialchars($row['title']); ?></h6>
+                                        <p class="small text-muted mb-2"><?php echo htmlspecialchars(substr($row['description'], 0, 80)) . '...'; ?></p>
+                                        <div class="d-flex justify-content-between align-items-center mt-3">
+                                            <small class="text-muted"><i class="bi bi-geo-alt me-1"></i><?php echo htmlspecialchars($row['location']); ?></small>
+                                            <form action="apply_logic.php" method="POST">
+                                                <input type="hidden" name="project_id" value="<?php echo $row['project_id']; ?>">
+                                                <button type="submit" class="btn btn-sm fw-bold" style="background-color:#FFD700; color:#2B547E;">Apply Now</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endwhile; ?>
+                        </div>
+                    <?php else: ?>
+                        <p class="text-center text-muted my-3">No new projects available to join right now.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="card border-0 mb-4 shadow-sm">
                 <div class="card-header text-white" style="background-color:#2B547E;">
-                    <h5 class="mb-0" style="color:#FFD700;"><i class="bi bi-calendar-check me-2"></i>Upcoming Projects</h5>
+                    <h5 class="mb-0" style="color:#FFD700;"><i class="bi bi-calendar-check me-2"></i>My Upcoming Projects</h5>
                 </div>
                 <div class="card-body p-4">
                     <?php if (mysqli_num_rows($upcoming_result) > 0): ?>
                         <div class="row g-3">
                             <?php while ($row = mysqli_fetch_assoc($upcoming_result)): ?>
                                 <div class="col-md-6">
-                                    <div class="border rounded p-3 h-100 hover-shadow" style="transition: all 0.3s; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
-                                        <h6 class="mb-2" style="color:#2B547E;"><?php echo htmlspecialchars($row['title']); ?></h6>
-                                        <p class="mb-2 small text-muted"><?php echo htmlspecialchars($row['description']); ?></p>
-                                        <p class="mb-2">
-                                            <i class="bi bi-calendar text-muted me-2"></i>
-                                            <small><?php echo date('M d, Y', strtotime($row['date'])); ?></small>
-                                        </p>
-                                        <p class="mb-2">
-                                            <i class="bi bi-geo-alt text-muted me-2"></i>
-                                            <small><?php echo htmlspecialchars($row['location']); ?></small>
-                                        </p>
-                                        <span class="badge" style="background-color:#FFD700; color:#2B547E;"><?php echo ucfirst($row['role_in_project']); ?></span>
+                                    <div class="p-3 border-start border-4 border-warning bg-light rounded shadow-sm">
+                                        <h6 class="mb-1 fw-bold"><?php echo htmlspecialchars($row['title']); ?></h6>
+                                        <small class="d-block text-muted mb-2"><i class="bi bi-calendar3 me-1"></i><?php echo date('M d, Y', strtotime($row['date'])); ?></small>
+                                        <span class="badge bg-secondary"><?php echo ucfirst($row['role_in_project']); ?></span>
                                     </div>
                                 </div>
                             <?php endwhile; ?>
                         </div>
                     <?php else: ?>
-                        <div class="text-center py-4">
-                            <i class="bi bi-inbox" style="font-size: 2rem; color: #ccc;"></i>
-                            <p class="text-muted mt-2">No upcoming projects yet</p>
+                        <div class="text-center py-3">
+                            <p class="text-muted">You haven't been added to any upcoming projects yet.</p>
                         </div>
                     <?php endif; ?>
                 </div>
             </div>
 
-            <!-- Completed Projects -->
-            <div class="card border-0" style="box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);">
+            <div class="card border-0 shadow-sm">
                 <div class="card-header text-white" style="background-color:#2B547E;">
-                    <h5 class="mb-0" style="color:#FFD700;"><i class="bi bi-check-circle me-2"></i>Completed Projects</h5>
+                    <h5 class="mb-0" style="color:#FFD700;"><i class="bi bi-check-circle me-2"></i>Project History</h5>
                 </div>
                 <div class="card-body p-4">
                     <?php if (mysqli_num_rows($completed_result) > 0): ?>
-                        <div class="row g-3">
-                            <?php while ($row = mysqli_fetch_assoc($completed_result)): ?>
-                                <div class="col-md-6">
-                                    <div class="border rounded p-3 h-100" style="background-color: #f8f9fa; transition: all 0.3s;">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <h6 class="mb-0" style="color:#2B547E;"><?php echo htmlspecialchars($row['title']); ?></h6>
-                                            <?php if ($row['attendance_status']): ?>
-                                                <span class="badge <?php echo $row['attendance_status'] === 'present' ? 'bg-success' : ($row['attendance_status'] === 'late' ? 'bg-warning text-dark' : 'bg-danger'); ?>">
-                                                    <?php echo ucfirst($row['attendance_status']); ?>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light text-muted small">
+                                    <tr>
+                                        <th>Project</th>
+                                        <th>Date</th>
+                                        <th>Attendance</th>
+                                        <th>Hours</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php while ($row = mysqli_fetch_assoc($completed_result)): ?>
+                                        <tr>
+                                            <td class="fw-bold"><?php echo htmlspecialchars($row['title']); ?></td>
+                                            <td><small><?php echo date('M d, Y', strtotime($row['date'])); ?></small></td>
+                                            <td>
+                                                <span class="badge <?php echo $row['attendance_status'] === 'present' ? 'bg-success' : 'bg-danger'; ?>">
+                                                    <?php echo ucfirst($row['attendance_status'] ?? 'N/A'); ?>
                                                 </span>
-                                            <?php endif; ?>
-                                        </div>
-                                        <p class="mb-2">
-                                            <i class="bi bi-calendar text-muted me-2"></i>
-                                            <small><?php echo date('M d, Y', strtotime($row['date'])); ?></small>
-                                        </p>
-                                        <p class="mb-2">
-                                            <i class="bi bi-geo-alt text-muted me-2"></i>
-                                            <small><?php echo htmlspecialchars($row['location']); ?></small>
-                                        </p>
-                                        <p class="mb-0">
-                                            <i class="bi bi-hourglass-split text-muted me-2"></i>
-                                             <small>
-                                                    <?php 
-                                                    echo ($row['attendance_status'] !== 'absent' 
-                                                        && $row['check_in_time'] 
-                                                        && $row['check_out_time']) 
-                                                        ? round((strtotime($row['check_out_time']) - strtotime($row['check_in_time'])) / 3600, 1) . ' hrs' 
-                                                        : '-'; 
-                                                    ?>
-                                            </small>
-                                        </p>
-                                    </div>
-                                </div>
-                            <?php endwhile; ?>
+                                            </td>
+                                            <td>
+                                                <?php 
+                                                    if($row['check_in_time'] && $row['check_out_time'] && $row['attendance_status'] !== 'absent') {
+                                                        echo round((strtotime($row['check_out_time']) - strtotime($row['check_in_time'])) / 3600, 1) . 'h';
+                                                    } else { echo '-'; }
+                                                ?>
+                                            </td>
+                                        </tr>
+                                    <?php endwhile; ?>
+                                </tbody>
+                            </table>
                         </div>
                     <?php else: ?>
-                        <div class="text-center py-5">
-                            <i class="bi bi-inbox" style="font-size: 3rem; color: #ddd;"></i>
-                            <p class="text-muted mt-3">No completed projects yet</p>
-                        </div>
+                        <p class="text-center text-muted">No completed projects in your record.</p>
                     <?php endif; ?>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
