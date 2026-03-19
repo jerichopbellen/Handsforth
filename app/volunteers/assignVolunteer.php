@@ -11,7 +11,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $role_in_project = $_POST['role_in_project'];
 
     // Use ON DUPLICATE KEY UPDATE to prevent multiple assignment rows
-    $sql = "INSERT INTO project_volunteers (project_id, volunteer_id, role_in_project, assigned_at)
+    $sql = "INSERT INTO project_volunteers (project_id, volunteer_id, role_in_project, assigned_at, is_deleted)
+            VALUES (?, ?, ?, NOW(), 0)
+            ON DUPLICATE KEY UPDATE role_in_project = VALUES(role_in_project), is_deleted = 0";
             VALUES (?, ?, ?, NOW())
             ON DUPLICATE KEY UPDATE role_in_project = VALUES(role_in_project)";
     

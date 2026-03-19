@@ -43,11 +43,8 @@ if (!empty($donation['donor_id'])) {
 if (isset($_POST['confirm_delete'])) {
     try {
         $pdo->beginTransaction();
-        // Delete related monetary_details and donation_items
-        $pdo->prepare("DELETE FROM monetary_details WHERE donation_id = ?")->execute([$donation_id]);
-        $pdo->prepare("DELETE FROM donation_items WHERE donation_id = ?")->execute([$donation_id]);
-        // Delete donation
-        $stmt = $pdo->prepare("DELETE FROM donations WHERE donation_id = ?");
+        // Soft delete donation
+        $stmt = $pdo->prepare("UPDATE donations SET is_deleted = 1 WHERE donation_id = ?");
         $stmt->execute([$donation_id]);
         $pdo->commit();
         $_SESSION['success'] = 'Donation deleted successfully';

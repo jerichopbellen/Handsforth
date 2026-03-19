@@ -23,10 +23,9 @@ $error = "";
 // 3. Handle the Actual Deletion
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_delete'])) {
     // UPDATED: We delete where BOTH project and volunteer match
-    $sql = "DELETE FROM project_volunteers WHERE project_id = ? AND volunteer_id = ?";
+    $sql = "UPDATE project_volunteers SET is_deleted = 1 WHERE project_id = ? AND volunteer_id = ?";
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, "ii", $project_id, $volunteer_id);
-
     if (mysqli_stmt_execute($stmt)) {
         header("Location: ../projects/view.php?id=" . $project_id . "&msg=Volunteer removed successfully");
         exit();

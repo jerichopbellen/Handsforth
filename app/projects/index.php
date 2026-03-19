@@ -11,6 +11,11 @@ $sql = "
     SELECT project_id, title, description, date, location, status, username
     FROM projects
     INNER JOIN users ON projects.created_by = users.user_id
+    WHERE projects.is_deleted = 0
+";
+    SELECT project_id, title, description, date, location, status, username
+    FROM projects
+    INNER JOIN users ON projects.created_by = users.user_id
     WHERE 1
 ";
 

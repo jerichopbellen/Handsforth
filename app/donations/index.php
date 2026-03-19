@@ -39,7 +39,7 @@ $report_query = !empty($report_filters) ? ('?' . http_build_query($report_filter
 $sql = "SELECT d.donation_id, d.donation_type, d.amount, d.description, d.date_received, d.donor_id, donors.name AS donor_name_lookup 
     FROM donations d
     LEFT JOIN donors ON d.donor_id = donors.donor_id
-    WHERE 1=1";
+    WHERE d.is_deleted = 0";
 $params = [];
 $types  = '';
 

@@ -6,7 +6,7 @@ include("../../includes/config.php");
 $search    = $_GET['search'] ?? '';
 $community = $_GET['community'] ?? '';
 
-$sql = "SELECT * FROM beneficiaries WHERE 1=1";
+$sql = "SELECT * FROM beneficiaries WHERE is_deleted = 0";
 $params = [];
 $types  = "";
 

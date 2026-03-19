@@ -33,8 +33,8 @@ if (!empty($user['img_path']) && file_exists($user['img_path'])) {
     unlink($user['img_path']);
 }
 
-// Delete user record
-$sql = "DELETE FROM users WHERE user_id = $user_id";
+// Soft delete user record
+$sql = "UPDATE users SET is_deleted = 1 WHERE user_id = $user_id";
 if (mysqli_query($conn, $sql)) {
     $_SESSION['success'] = "User deleted successfully!";
 } else {

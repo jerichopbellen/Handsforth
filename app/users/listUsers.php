@@ -15,6 +15,13 @@ $sql = "
            u.email, u.phone, u.created_at, u.updated_at
     FROM users u
     INNER JOIN roles r ON u.role_id = r.role_id
+    WHERE u.is_deleted = 0
+    ORDER BY u.created_at DESC
+";
+    SELECT u.user_id, r.role_name, u.username, u.first_name, u.last_name,
+           u.email, u.phone, u.created_at, u.updated_at
+    FROM users u
+    INNER JOIN roles r ON u.role_id = r.role_id
     ORDER BY u.created_at DESC
 ";
 $result = mysqli_query($conn, $sql);

@@ -31,15 +31,13 @@ if (!$project) {
 }
 
 if (isset($_POST['confirm_delete'])) {
-    $delete_sql = "DELETE FROM projects WHERE project_id = ?";
+    $delete_sql = "UPDATE projects SET is_deleted = 1 WHERE project_id = ?";
     $delete_stmt = mysqli_prepare($conn, $delete_sql);
-    
     if (!$delete_stmt) {
         $_SESSION['error'] = 'Database error: ' . mysqli_error($conn);
         header("Location: index.php");
         exit();
     }
-
     mysqli_stmt_bind_param($delete_stmt, 'i', $project_id);
     if (mysqli_stmt_execute($delete_stmt)) {
         $_SESSION['success'] = 'Project deleted successfully';
